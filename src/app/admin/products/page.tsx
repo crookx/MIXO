@@ -106,9 +106,9 @@ export default function AdminProductsPage() {
       transition={{ duration: 0.5 }}
       className="flex flex-col gap-6"
     >
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl md:text-3xl font-bold">Products</h1>
-        <Button asChild className="btn-animated btn-animated-accent">
+        <Button asChild className="btn-animated btn-animated-accent w-full sm:w-auto">
           <Link href="/admin/products/create"> {/* Link to create page */}
             <PlusCircle className="mr-2 h-4 w-4" /> Add Product
           </Link>
@@ -137,85 +137,88 @@ export default function AdminProductsPage() {
         transition={{ delay: 0.1, duration: 0.5 }}
         className="border rounded-lg overflow-hidden shadow-sm card-glow" // Added card-glow
       >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="text-right">Price</TableHead>
-              <TableHead className="text-right">Stock</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading && paginatedProducts.length === 0 ? ( // Show spinner only if truly loading initial data
-              <TableRow>
-                <TableCell colSpan={7} className="h-60 text-center">
-                  <div className="flex flex-col items-center justify-center gap-4">
-                     <AnimatedSpinner className="text-accent" />
-                     <span className="text-muted-foreground">Loading products...</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : paginatedProducts.length > 0 ? (
-              paginatedProducts.map((product, index) => (
-                <motion.tr // Use motion.tr here
-                  key={product.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
-                >
-                  <TableCell className="font-medium">
-                    <Link href={`/admin/products/${product.id}`} className="hover:underline hover:text-accent">{product.name}</Link>
-                  </TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
-                  <TableCell className={`text-right ${product.stock === 0 ? 'text-destructive' : ''}`}>
-                      {product.stock}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={product.status === 'active' ? 'default' : 'secondary'} className={product.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}>
-                       {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell><FormattedDate date={product.createdAt} /></TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isLoading}>
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Actions</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                         <DropdownMenuItem disabled={isLoading} asChild>
-                             <Link href={`/admin/products/${product.id}`}>Edit</Link>
-                        </DropdownMenuItem>
-                        {product.status === 'active' ? (
-                           <DropdownMenuItem onClick={() => handleArchive(product.id)} disabled={isLoading}>Archive</DropdownMenuItem>
-                        ) : (
-                           <DropdownMenuItem onClick={() => handleActivate(product.id)} disabled={isLoading}>Activate</DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(product.id)} disabled={isLoading}>Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </motion.tr> // End motion.tr - Ensure no whitespace before/after TableCells
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  No products found{searchTerm ? ' matching your search' : ''}.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        {/* Added overflow-auto for horizontal scrolling on small screens */}
+        <div className="overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[150px]">Name</TableHead>
+                  <TableHead className="min-w-[100px]">Category</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Price</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Stock</TableHead>
+                  <TableHead className="min-w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[120px]">Created At</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading && paginatedProducts.length === 0 ? ( // Show spinner only if truly loading initial data
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-60 text-center">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                         <AnimatedSpinner className="text-accent" />
+                         <span className="text-muted-foreground">Loading products...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedProducts.length > 0 ? (
+                  paginatedProducts.map((product, index) => (
+                    <motion.tr // Use motion.tr here
+                      key={product.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
+                    >
+                      <TableCell className="font-medium">
+                        <Link href={`/admin/products/${product.id}`} className="hover:underline hover:text-accent">{product.name}</Link>
+                      </TableCell>
+                      <TableCell>{product.category}</TableCell>
+                      <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
+                      <TableCell className={`text-right ${product.stock === 0 ? 'text-destructive' : ''}`}>
+                          {product.stock}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={product.status === 'active' ? 'default' : 'secondary'} className={product.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}>
+                           {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell><FormattedDate date={product.createdAt} /></TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isLoading}>
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Actions</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                             <DropdownMenuItem disabled={isLoading} asChild>
+                                 <Link href={`/admin/products/${product.id}`}>Edit</Link>
+                            </DropdownMenuItem>
+                            {product.status === 'active' ? (
+                               <DropdownMenuItem onClick={() => handleArchive(product.id)} disabled={isLoading}>Archive</DropdownMenuItem>
+                            ) : (
+                               <DropdownMenuItem onClick={() => handleActivate(product.id)} disabled={isLoading}>Activate</DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(product.id)} disabled={isLoading}>Delete</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </motion.tr> // End motion.tr
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                      No products found{searchTerm ? ' matching your search' : ''}.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+        </div>
       </motion.div>
 
        {/* Pagination Controls */}
@@ -224,10 +227,10 @@ export default function AdminProductsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex justify-between items-center pt-4"
+            className="flex flex-col sm:flex-row justify-between items-center pt-4 gap-4"
          >
             <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
+                Page {currentPage} of {totalPages} ({filteredProducts.length} total products)
             </span>
             <div className="flex gap-2">
               <Button

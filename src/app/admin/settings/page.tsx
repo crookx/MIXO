@@ -4,15 +4,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { motion } from "framer-motion"; // Import motion
 
 export default function AdminSettingsPage() {
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div // Wrap entire page content in motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col gap-6"
+    >
       <h1 className="text-2xl md:text-3xl font-bold">Settings</h1>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      {/* Changed to flex-col for better stacking on mobile */}
+      <div className="flex flex-col gap-6">
         {/* General Settings Card */}
-        <Card className="shadow-sm">
+        <Card className="shadow-sm card-glow">
           <CardHeader>
             <CardTitle>General Settings</CardTitle>
             <CardDescription>Manage basic store settings.</CardDescription>
@@ -26,21 +33,21 @@ export default function AdminSettingsPage() {
               <Label htmlFor="support-email">Support Email</Label>
               <Input id="support-email" type="email" defaultValue="support@chronothreads.xyz" />
             </div>
-            <div className="flex items-center justify-between space-x-2 pt-2">
-               <Label htmlFor="maintenance-mode" className="flex flex-col space-y-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 sm:space-x-2 pt-2">
+               <Label htmlFor="maintenance-mode" className="flex flex-col space-y-1 flex-grow">
                    <span>Maintenance Mode</span>
                    <span className="font-normal leading-snug text-muted-foreground">
                      Temporarily disable storefront access for updates.
                    </span>
                 </Label>
-               <Switch id="maintenance-mode" aria-label="Maintenance mode" />
+               <Switch id="maintenance-mode" aria-label="Maintenance mode" className="flex-shrink-0" />
             </div>
             <Button className="mt-4 btn-animated">Save General Settings</Button>
           </CardContent>
         </Card>
 
         {/* Shipping Settings Card */}
-        <Card className="shadow-sm">
+        <Card className="shadow-sm card-glow">
           <CardHeader>
             <CardTitle>Shipping Settings</CardTitle>
             <CardDescription>Configure shipping zones and rates.</CardDescription>
@@ -61,7 +68,7 @@ export default function AdminSettingsPage() {
         </Card>
 
          {/* Payment Settings Card (Placeholder) */}
-         <Card className="shadow-sm md:col-span-2">
+         <Card className="shadow-sm card-glow"> {/* No md:col-span-2 needed in flex-col */}
              <CardHeader>
                 <CardTitle>Payment Gateways</CardTitle>
                 <CardDescription>Connect and manage payment providers.</CardDescription>
@@ -73,6 +80,6 @@ export default function AdminSettingsPage() {
          </Card>
 
       </div>
-    </div>
+    </motion.div>
   );
 }

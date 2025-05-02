@@ -58,11 +58,11 @@ const getStatusBadgeClass = (status: OrderStatus): string => {
 };
 
 interface CustomerOrdersPageProps {
-    params: Promise<{ id: string }>; // Changed to Promise
+    params: { id: string }; // Direct access is okay now in `use client`
 }
 
-export default function CustomerOrdersPage({ params: paramsPromise }: CustomerOrdersPageProps) { // Renamed params to paramsPromise
-  const params = use(paramsPromise); // Unwrap the promise using React.use()
+export default function CustomerOrdersPage({ params }: CustomerOrdersPageProps) { // Adjusted for use(params)
+  // const params = use(paramsPromise); // No longer needed with direct params access
   const customerId = params.id;
 
   const router = useRouter();
@@ -189,12 +189,12 @@ export default function CustomerOrdersPage({ params: paramsPromise }: CustomerOr
           <ArrowLeft className="h-4 w-4" />
           <span className="sr-only">Back</span>
         </Button>
-        <h1 className="text-2xl md:text-3xl font-bold">Orders for {customer.name}</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold truncate">Orders for {customer.name}</h1>
       </div>
 
       {/* Search and Filters */}
-       <div className="flex items-center gap-4">
-          <div className="relative flex-1">
+       <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative flex-1 w-full">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
@@ -206,7 +206,7 @@ export default function CustomerOrdersPage({ params: paramsPromise }: CustomerOr
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2 btn-animated">
+              <Button variant="outline" className="flex items-center gap-2 btn-animated w-full sm:w-auto">
                 <Filter className="h-4 w-4" />
                 Status
                 {statusFilters.length > 0 && (
@@ -251,77 +251,80 @@ export default function CustomerOrdersPage({ params: paramsPromise }: CustomerOr
         transition={{ delay: 0.1, duration: 0.5 }}
         className="border rounded-lg overflow-hidden shadow-sm card-glow"
       >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-             {paginatedOrders.length > 0 ? (
-              paginatedOrders.map((order, index) => (
-                <motion.tr
-                  key={order.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="hover:bg-muted/50 transition-colors"
-                >
-                  <TableCell className="font-medium">
-                      <Link href={`/admin/orders/${order.id}`} className="hover:underline hover:text-accent">{order.id}</Link>
-                  </TableCell>
-                  <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
-                  <TableCell>
-                     <Badge variant={getStatusBadgeVariant(order.status)} className={cn("capitalize", getStatusBadgeClass(order.status))}>
-                        {order.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell><FormattedDate date={order.createdAt} /></TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Actions</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                         <DropdownMenuItem asChild>
-                             <Link href={`/admin/orders/${order.id}`}>View Details</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                         <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                         {allStatuses
-                            .filter(s => s !== order.status)
-                            .map(newStatus => (
-                                <DropdownMenuItem
-                                    key={newStatus}
-                                    onClick={() => handleStatusChange(order.id, newStatus)}
-                                    className="capitalize"
-                                >
-                                    Mark as {newStatus}
-                                </DropdownMenuItem>
-                            ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </motion.tr>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  No orders found{statusFilters.length > 0 || searchTerm ? ' matching your criteria' : ''}.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        {/* Added overflow-auto for horizontal scrolling */}
+        <div className="overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[120px]">Order ID</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Total</TableHead>
+                  <TableHead className="min-w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[120px]">Date</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                 {paginatedOrders.length > 0 ? (
+                  paginatedOrders.map((order, index) => (
+                    <motion.tr
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="hover:bg-muted/50 transition-colors"
+                    >
+                      <TableCell className="font-medium">
+                          <Link href={`/admin/orders/${order.id}`} className="hover:underline hover:text-accent">{order.id}</Link>
+                      </TableCell>
+                      <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
+                      <TableCell>
+                         <Badge variant={getStatusBadgeVariant(order.status)} className={cn("capitalize whitespace-nowrap", getStatusBadgeClass(order.status))}>
+                            {order.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell><FormattedDate date={order.createdAt} /></TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Actions</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                             <DropdownMenuItem asChild>
+                                 <Link href={`/admin/orders/${order.id}`}>View Details</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                             <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                             {allStatuses
+                                .filter(s => s !== order.status)
+                                .map(newStatus => (
+                                    <DropdownMenuItem
+                                        key={newStatus}
+                                        onClick={() => handleStatusChange(order.id, newStatus)}
+                                        className="capitalize"
+                                    >
+                                        Mark as {newStatus}
+                                    </DropdownMenuItem>
+                                ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </motion.tr>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                      No orders found{statusFilters.length > 0 || searchTerm ? ' matching your criteria' : ''}.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+        </div>
       </motion.div>
 
        {/* Pagination Controls */}
@@ -330,7 +333,7 @@ export default function CustomerOrdersPage({ params: paramsPromise }: CustomerOr
            initial={{ opacity: 0 }}
            animate={{ opacity: 1 }}
            transition={{ delay: 0.2, duration: 0.5 }}
-           className="flex justify-between items-center pt-4"
+           className="flex flex-col sm:flex-row justify-between items-center pt-4 gap-4"
          >
             <span className="text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages} ({filteredOrders.length} orders)

@@ -134,8 +134,8 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Search and Filters */}
-       <div className="flex items-center gap-4">
-          <div className="relative flex-1">
+       <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative flex-1 w-full">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
@@ -147,7 +147,7 @@ export default function AdminOrdersPage() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2 btn-animated">
+              <Button variant="outline" className="flex items-center gap-2 btn-animated w-full sm:w-auto"> {/* Make full width on mobile */}
                 <Filter className="h-4 w-4" />
                 Status
                 {statusFilters.length > 0 && (
@@ -192,93 +192,96 @@ export default function AdminOrdersPage() {
         transition={{ delay: 0.1, duration: 0.5 }}
         className="border rounded-lg overflow-hidden shadow-sm card-glow" // Added card-glow
       >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-             {isLoading && paginatedOrders.length === 0 ? ( // Show spinner only if truly loading initial data
-              <TableRow>
-                <TableCell colSpan={7} className="h-60 text-center">
-                  <div className="flex flex-col items-center justify-center gap-4">
-                     <AnimatedSpinner className="text-accent" />
-                     <span className="text-muted-foreground">Loading orders...</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : paginatedOrders.length > 0 ? (
-              paginatedOrders.map((order, index) => (
-                <motion.tr // Use motion.tr here
-                  key={order.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
-                >
-                  <TableCell className="font-medium">
-                    <Link href={`/admin/orders/${order.id}`} className="hover:underline hover:text-accent">{order.id}</Link>
-                  </TableCell>
-                  <TableCell>
-                    <Link href={`/admin/customers/${mockCustomers.find(c => c.email === order.customerEmail)?.id}`} className="hover:underline hover:text-accent">{order.customerName}</Link>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{order.customerEmail}</TableCell>
-                  <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
-                  <TableCell>
-                     <Badge variant={getStatusBadgeVariant(order.status)} className={cn("capitalize", getStatusBadgeClass(order.status))}>
-                        {order.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell><FormattedDate date={order.createdAt} /></TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isLoading}>
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Actions</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                            <Link href={`/admin/orders/${order.id}`}>View Details</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                         <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                         {allStatuses
-                            .filter(s => s !== order.status) // Don't show current status as an option
-                            .map(newStatus => (
-                                <DropdownMenuItem
-                                    key={newStatus}
-                                    onClick={() => handleStatusChange(order.id, newStatus)}
-                                    className="capitalize"
-                                    disabled={isLoading} // Disable while loading
-                                >
-                                    Mark as {newStatus}
-                                </DropdownMenuItem>
-                            ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </motion.tr>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  No orders found{statusFilters.length > 0 || searchTerm ? ' matching your criteria' : ''}.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        {/* Added overflow-auto for horizontal scrolling on small screens */}
+        <div className="overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[120px]">Order ID</TableHead>
+                  <TableHead className="min-w-[150px]">Customer</TableHead>
+                  <TableHead className="min-w-[180px]">Email</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Total</TableHead>
+                  <TableHead className="min-w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[120px]">Date</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                 {isLoading && paginatedOrders.length === 0 ? ( // Show spinner only if truly loading initial data
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-60 text-center">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                         <AnimatedSpinner className="text-accent" />
+                         <span className="text-muted-foreground">Loading orders...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedOrders.length > 0 ? (
+                  paginatedOrders.map((order, index) => (
+                    <motion.tr // Use motion.tr here
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
+                    >
+                      <TableCell className="font-medium">
+                        <Link href={`/admin/orders/${order.id}`} className="hover:underline hover:text-accent">{order.id}</Link>
+                      </TableCell>
+                      <TableCell>
+                        <Link href={`/admin/customers/${mockCustomers.find(c => c.email === order.customerEmail)?.id ?? '#'}`} className="hover:underline hover:text-accent">{order.customerName}</Link>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{order.customerEmail}</TableCell>
+                      <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
+                      <TableCell>
+                         <Badge variant={getStatusBadgeVariant(order.status)} className={cn("capitalize whitespace-nowrap", getStatusBadgeClass(order.status))}>
+                            {order.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell><FormattedDate date={order.createdAt} /></TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isLoading}>
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Actions</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                                <Link href={`/admin/orders/${order.id}`}>View Details</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                             <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                             {allStatuses
+                                .filter(s => s !== order.status) // Don't show current status as an option
+                                .map(newStatus => (
+                                    <DropdownMenuItem
+                                        key={newStatus}
+                                        onClick={() => handleStatusChange(order.id, newStatus)}
+                                        className="capitalize"
+                                        disabled={isLoading} // Disable while loading
+                                    >
+                                        Mark as {newStatus}
+                                    </DropdownMenuItem>
+                                ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </motion.tr>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                      No orders found{statusFilters.length > 0 || searchTerm ? ' matching your criteria' : ''}.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+        </div>
       </motion.div>
 
        {/* Pagination Controls */}
@@ -287,7 +290,7 @@ export default function AdminOrdersPage() {
            initial={{ opacity: 0 }}
            animate={{ opacity: 1 }}
            transition={{ delay: 0.2, duration: 0.5 }}
-           className="flex justify-between items-center pt-4"
+           className="flex flex-col sm:flex-row justify-between items-center pt-4 gap-4"
          >
             <span className="text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages} ({filteredOrders.length} total orders)

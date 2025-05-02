@@ -1,9 +1,9 @@
 // src/app/admin/layout.tsx
 import type { Metadata } from 'next';
-import { AdminSidebar } from '@/components/admin/admin-sidebar';
+import { AdminSidebar, AdminMobileSidebarTrigger } from '@/components/admin/admin-sidebar'; // Import trigger
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
-// import { SidebarProvider } from '@/components/ui/sidebar'; // Import if using the provided Sidebar component
+import { Sheet } from '@/components/ui/sheet'; // Import Sheet root for context
 
 export const metadata: Metadata = {
   title: 'ChronoThreads Admin',
@@ -16,17 +16,23 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Wrap with SidebarProvider if using that component structure
-    // <SidebarProvider defaultOpen={true}>
-    <div className="flex min-h-screen w-full bg-background">
-      <AdminSidebar />
-      <main className="flex flex-1 flex-col p-4 md:p-6 lg:p-8 overflow-auto">
-        {/* TODO: Add Admin Header component here if needed */}
-        {/* <AdminHeader /> */}
-        {children}
-      </main>
-      <Toaster />
-    </div>
-    // </SidebarProvider>
+    // Wrap with Sheet for mobile sidebar context
+    <Sheet>
+      <div className="flex min-h-screen w-full bg-background">
+        <AdminSidebar /> {/* Renders SheetContent on mobile, fixed sidebar on desktop */}
+        <div className="flex flex-1 flex-col">
+          {/* Optional Header for mobile trigger */}
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
+              {/* Mobile Sidebar Trigger */}
+              <AdminMobileSidebarTrigger />
+              {/* Maybe add a Breadcrumb or Title here for mobile */}
+          </header>
+          <main className="flex flex-1 flex-col p-4 md:p-6 lg:p-8 overflow-auto">
+            {children}
+          </main>
+        </div>
+        <Toaster />
+      </div>
+    </Sheet>
   );
 }

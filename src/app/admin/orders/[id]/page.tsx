@@ -59,7 +59,7 @@ const getStatusBadgeClass = (status: OrderStatus): string => {
 };
 
 interface OrderDetailsPageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string }; // Direct access okay
 }
 
 // Mock function to get order items (replace with actual data fetching)
@@ -84,8 +84,8 @@ const getOrderItems = async (orderId: string): Promise<OrderItem[]> => {
 };
 
 
-export default function OrderDetailsPage({ params: paramsPromise }: OrderDetailsPageProps) {
-  const params = use(paramsPromise);
+export default function OrderDetailsPage({ params }: OrderDetailsPageProps) {
+  // const params = use(paramsPromise); // No longer needed
   const orderId = params.id;
 
   const { toast } = useToast();
@@ -211,18 +211,18 @@ export default function OrderDetailsPage({ params: paramsPromise }: OrderDetails
       transition={{ duration: 0.5 }}
       className="flex flex-col gap-6"
     >
-      <div className="flex items-center gap-4 justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
          <div className="flex items-center gap-4">
              <Button variant="outline" size="icon" onClick={() => router.back()} className="h-8 w-8 btn-animated">
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
              </Button>
-             <h1 className="text-2xl md:text-3xl font-bold">Order {order.id}</h1>
+             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold truncate">Order {order.id}</h1>
          </div>
           {/* Status Change Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="btn-animated" disabled={isUpdatingStatus}>
+              <Button variant="outline" className="btn-animated w-full sm:w-auto" disabled={isUpdatingStatus}>
                  {isUpdatingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                  Change Status
               </Button>
@@ -248,14 +248,14 @@ export default function OrderDetailsPage({ params: paramsPromise }: OrderDetails
         {/* Order Details & Items */}
         <Card className="md:col-span-2 shadow-md card-glow">
           <CardHeader>
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
                  <div>
                     <CardTitle className="flex items-center gap-2"><Hash className="h-5 w-5"/> Order Details</CardTitle>
                     <CardDescription>
                         Placed on <FormattedDate date={order.createdAt} formatString="PPPp" />
                     </CardDescription>
                  </div>
-                 <Badge variant={getStatusBadgeVariant(order.status)} className={cn("capitalize text-base px-3 py-1", getStatusBadgeClass(order.status))}>
+                 <Badge variant={getStatusBadgeVariant(order.status)} className={cn("capitalize text-base px-3 py-1 whitespace-nowrap", getStatusBadgeClass(order.status))}>
                     {order.status}
                 </Badge>
              </div>
@@ -275,35 +275,38 @@ export default function OrderDetailsPage({ params: paramsPromise }: OrderDetails
              {/* Items Table */}
              <div>
                 <h3 className="font-semibold mb-3 flex items-center gap-2"><Package className="h-4 w-4 text-primary"/> Items Ordered</h3>
-                 <Table>
-                     <TableHeader>
-                        <TableRow>
-                           <TableHead>Product</TableHead>
-                           <TableHead className="text-center">Quantity</TableHead>
-                           <TableHead className="text-right">Price</TableHead>
-                           <TableHead className="text-right">Total</TableHead>
-                        </TableRow>
-                     </TableHeader>
-                     <TableBody>
-                        {orderItems.map(item => (
-                            <TableRow key={item.product.id}>
-                               <TableCell className="font-medium">
-                                   <Link href={`/admin/products/${item.product.id}`} className="hover:underline hover:text-accent">
-                                       {item.product.name}
-                                   </Link>
-                                </TableCell>
-                               <TableCell className="text-center">{item.quantity}</TableCell>
-                               <TableCell className="text-right">${item.priceAtPurchase.toFixed(2)}</TableCell>
-                               <TableCell className="text-right">${(item.priceAtPurchase * item.quantity).toFixed(2)}</TableCell>
+                 {/* Added overflow-auto */}
+                 <div className="overflow-x-auto">
+                     <Table>
+                         <TableHeader>
+                            <TableRow>
+                               <TableHead className="min-w-[150px]">Product</TableHead>
+                               <TableHead className="text-center min-w-[80px]">Quantity</TableHead>
+                               <TableHead className="text-right min-w-[80px]">Price</TableHead>
+                               <TableHead className="text-right min-w-[80px]">Total</TableHead>
                             </TableRow>
-                        ))}
-                         {/* Summary Row */}
-                         <TableRow className="border-t-2 border-border font-semibold">
-                             <TableCell colSpan={3} className="text-right text-lg">Total</TableCell>
-                             <TableCell className="text-right text-lg">${order.total.toFixed(2)}</TableCell>
-                        </TableRow>
-                     </TableBody>
-                </Table>
+                         </TableHeader>
+                         <TableBody>
+                            {orderItems.map(item => (
+                                <TableRow key={item.product.id}>
+                                   <TableCell className="font-medium">
+                                       <Link href={`/admin/products/${item.product.id}`} className="hover:underline hover:text-accent">
+                                           {item.product.name}
+                                       </Link>
+                                    </TableCell>
+                                   <TableCell className="text-center">{item.quantity}</TableCell>
+                                   <TableCell className="text-right">${item.priceAtPurchase.toFixed(2)}</TableCell>
+                                   <TableCell className="text-right">${(item.priceAtPurchase * item.quantity).toFixed(2)}</TableCell>
+                                </TableRow>
+                            ))}
+                             {/* Summary Row */}
+                             <TableRow className="border-t-2 border-border font-semibold">
+                                 <TableCell colSpan={3} className="text-right text-lg">Total</TableCell>
+                                 <TableCell className="text-right text-lg">${order.total.toFixed(2)}</TableCell>
+                            </TableRow>
+                         </TableBody>
+                    </Table>
+                 </div>
             </div>
              <Separator />
              {/* Payment Info (Placeholder) */}
@@ -322,7 +325,7 @@ export default function OrderDetailsPage({ params: paramsPromise }: OrderDetails
         </Card>
 
         {/* Customer Details Sidebar */}
-        <Card className="md:col-span-1 shadow-md card-glow h-fit sticky top-20"> {/* Make sticky */}
+        <Card className="md:col-span-1 shadow-md card-glow h-fit md:sticky top-20"> {/* Make sticky on md+ */}
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><User className="h-5 w-5"/> Customer</CardTitle>
           </CardHeader>

@@ -87,10 +87,10 @@ export default function AdminCustomersPage() {
       transition={{ duration: 0.5 }}
       className="flex flex-col gap-6"
     >
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl md:text-3xl font-bold">Customers</h1>
          {/* Optional: Add Customer button */}
-         <Button className="btn-animated btn-animated-accent">
+         <Button className="btn-animated btn-animated-accent w-full sm:w-auto">
              <PlusCircle className="mr-2 h-4 w-4" /> Add Customer
         </Button>
       </div>
@@ -117,82 +117,85 @@ export default function AdminCustomersPage() {
         transition={{ delay: 0.1, duration: 0.5 }}
         className="border rounded-lg overflow-hidden shadow-sm card-glow" // Added card-glow
       >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="text-right">Total Orders</TableHead>
-              <TableHead className="text-right">Total Spent</TableHead>
-              <TableHead>Joined At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-             {isLoading && paginatedCustomers.length === 0 ? ( // Show spinner only if truly loading initial data
-               <TableRow>
-                <TableCell colSpan={6} className="h-60 text-center">
-                  <div className="flex flex-col items-center justify-center gap-4">
-                     <AnimatedSpinner className="text-accent" />
-                     <span className="text-muted-foreground">Loading customers...</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-             ) : paginatedCustomers.length > 0 ? (
-              paginatedCustomers.map((customer, index) => (
-                <motion.tr // Use motion.tr here
-                  key={customer.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
-                >
-                  <TableCell className="font-medium">
-                     <Link href={`/admin/customers/${customer.id}`} className="hover:underline hover:text-accent">{customer.name}</Link>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{customer.email}</TableCell>
-                  <TableCell className="text-right">{customer.totalOrders}</TableCell>
-                  <TableCell className="text-right">${customer.totalSpent.toFixed(2)}</TableCell>
-                  <TableCell><FormattedDate date={customer.joinedAt} /></TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isLoading}>
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Actions</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Customer Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                         <DropdownMenuItem disabled={isLoading} asChild>
-                            <Link href={`/admin/customers/${customer.id}`}>View Details</Link>
-                         </DropdownMenuItem>
-                         <DropdownMenuItem disabled={isLoading} asChild>
-                            <Link href={`/admin/customers/${customer.id}/orders`}>View Orders</Link>
-                        </DropdownMenuItem>
-                         {/* Use with caution */}
-                         <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => handleDelete(customer.id)}
-                            disabled={isLoading}
-                         >
-                            Delete Customer
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </motion.tr> // End motion.tr - Ensure no whitespace before/after TableCells
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  No customers found{searchTerm ? ' matching your search' : ''}.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        {/* Added overflow-auto for horizontal scrolling */}
+        <div className="overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[150px]">Name</TableHead>
+                  <TableHead className="min-w-[180px]">Email</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Total Orders</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Total Spent</TableHead>
+                  <TableHead className="min-w-[120px]">Joined At</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                 {isLoading && paginatedCustomers.length === 0 ? ( // Show spinner only if truly loading initial data
+                   <TableRow>
+                    <TableCell colSpan={6} className="h-60 text-center">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                         <AnimatedSpinner className="text-accent" />
+                         <span className="text-muted-foreground">Loading customers...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                 ) : paginatedCustomers.length > 0 ? (
+                  paginatedCustomers.map((customer, index) => (
+                    <motion.tr // Use motion.tr here
+                      key={customer.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
+                    >
+                      <TableCell className="font-medium">
+                         <Link href={`/admin/customers/${customer.id}`} className="hover:underline hover:text-accent">{customer.name}</Link>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{customer.email}</TableCell>
+                      <TableCell className="text-right">{customer.totalOrders}</TableCell>
+                      <TableCell className="text-right">${customer.totalSpent.toFixed(2)}</TableCell>
+                      <TableCell><FormattedDate date={customer.joinedAt} /></TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isLoading}>
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Actions</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Customer Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                             <DropdownMenuItem disabled={isLoading} asChild>
+                                <Link href={`/admin/customers/${customer.id}`}>View Details</Link>
+                             </DropdownMenuItem>
+                             <DropdownMenuItem disabled={isLoading} asChild>
+                                <Link href={`/admin/customers/${customer.id}/orders`}>View Orders</Link>
+                            </DropdownMenuItem>
+                             {/* Use with caution */}
+                             <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => handleDelete(customer.id)}
+                                disabled={isLoading}
+                             >
+                                Delete Customer
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </motion.tr> // End motion.tr
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                      No customers found{searchTerm ? ' matching your search' : ''}.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+        </div>
       </motion.div>
 
       {/* Pagination Controls */}
@@ -201,10 +204,10 @@ export default function AdminCustomersPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="flex justify-between items-center pt-4"
+          className="flex flex-col sm:flex-row justify-between items-center pt-4 gap-4"
         >
           <span className="text-sm text-muted-foreground">
-            Page {currentPage} of {totalPages}
+            Page {currentPage} of {totalPages} ({filteredCustomers.length} total customers)
           </span>
           <div className="flex gap-2">
             <Button
