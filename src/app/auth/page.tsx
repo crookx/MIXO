@@ -11,9 +11,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import Link from 'next/link'; // Import Link
+import Link from 'next/link';
 // Placeholder icons for social login
-import { Chrome, Facebook, Twitter } from 'lucide-react'; // Replace Chrome with Google icon if available or use SVG
+import { Chrome, Facebook, Twitter, Loader2 } from 'lucide-react'; // Import Loader2
 
 
 // Schemas for validation
@@ -38,6 +38,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function AuthPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [socialProviderSubmitting, setSocialProviderSubmitting] = useState<string | null>(null); // Track specific social provider
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -55,6 +56,8 @@ export default function AuthPage() {
     // ** TODO: Implement Firebase Email/Password Login Here **
     // Example using hypothetical firebaseAuth.signInWithEmailAndPassword(data.email, data.password);
     try {
+       // Simulate async operation
+       await new Promise(resolve => setTimeout(resolve, 1500));
        // await firebaseAuth.signInWithEmailAndPassword(data.email, data.password);
        toast({ title: "Login Successful", description: "Welcome back!" });
        // Redirect user appropriately, e.g., router.push('/profile');
@@ -72,6 +75,8 @@ export default function AuthPage() {
     // ** TODO: Implement Firebase Email/Password Sign Up Here **
     // Example using hypothetical firebaseAuth.createUserWithEmailAndPassword(data.email, data.password);
      try {
+       // Simulate async operation
+       await new Promise(resolve => setTimeout(resolve, 1500));
        // await firebaseAuth.createUserWithEmailAndPassword(data.email, data.password);
        toast({ title: "Sign Up Successful", description: "Welcome! Please check your email for verification." });
         // Redirect user appropriately, e.g., router.push('/profile'); or show verification message
@@ -84,6 +89,7 @@ export default function AuthPage() {
   };
 
    const handleSocialLogin = async (provider: 'google' | 'facebook' | 'twitter') => {
+        setSocialProviderSubmitting(provider);
         console.log(`Attempting login with ${provider}`);
         // ** TODO: Implement Firebase Social Login Here **
         // Example: const authProvider = new firebase.auth.GoogleAuthProvider();
@@ -91,11 +97,14 @@ export default function AuthPage() {
         toast({ title: `${provider.charAt(0).toUpperCase() + provider.slice(1)} Login`, description: `Connecting with ${provider}...` });
          try {
             // Simulate success/failure
+            await new Promise(resolve => setTimeout(resolve, 1500));
             // await firebaseAuth.signInWithPopup(provider);
             toast({ title: "Login Successful", description: `Welcome via ${provider}!` });
             // Redirect
          } catch (error: any) {
             toast({ title: "Social Login Failed", description: error.message || `Could not log in with ${provider}.`, variant: "destructive" });
+         } finally {
+            setSocialProviderSubmitting(null);
          }
     };
 
@@ -140,8 +149,12 @@ export default function AuthPage() {
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="w-full btn-animated btn-animated-accent" disabled={isSubmitting}>
-                        {isSubmitting ? 'Logging in...' : 'Login'}
+                      <Button type="submit" className="w-full btn-animated btn-animated-accent" disabled={isSubmitting || !!socialProviderSubmitting}>
+                         {isSubmitting ? (
+                           <>
+                             <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Logging in...
+                           </>
+                         ) : 'Login'}
                       </Button>
                     </form>
                  </Form>
@@ -158,16 +171,16 @@ export default function AuthPage() {
 
                  {/* Social Login Buttons */}
                  <div className="grid grid-cols-3 gap-3">
-                     <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('google')} disabled={isSubmitting}>
-                         <Chrome className="mr-2 h-4 w-4" /> {/* Placeholder for Google Icon */}
+                     <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('google')} disabled={isSubmitting || !!socialProviderSubmitting}>
+                         {socialProviderSubmitting === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Chrome className="mr-2 h-4 w-4" />}
                          Google
                     </Button>
-                    <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('facebook')} disabled={isSubmitting}>
-                         <Facebook className="mr-2 h-4 w-4" />
+                    <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('facebook')} disabled={isSubmitting || !!socialProviderSubmitting}>
+                         {socialProviderSubmitting === 'facebook' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Facebook className="mr-2 h-4 w-4" />}
                          Facebook
                     </Button>
-                     <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('twitter')} disabled={isSubmitting}>
-                         <Twitter className="mr-2 h-4 w-4" />
+                     <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('twitter')} disabled={isSubmitting || !!socialProviderSubmitting}>
+                         {socialProviderSubmitting === 'twitter' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Twitter className="mr-2 h-4 w-4" />}
                          Twitter
                     </Button>
                  </div>
@@ -219,8 +232,12 @@ export default function AuthPage() {
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="w-full btn-animated btn-animated-accent" disabled={isSubmitting}>
-                          {isSubmitting ? 'Creating Account...' : 'Sign Up'}
+                      <Button type="submit" className="w-full btn-animated btn-animated-accent" disabled={isSubmitting || !!socialProviderSubmitting}>
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...
+                            </>
+                          ) : 'Sign Up'}
                       </Button>
                     </form>
                  </Form>
@@ -231,9 +248,15 @@ export default function AuthPage() {
                     <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">Or sign up with</span></div>
                  </div>
                  <div className="grid grid-cols-3 gap-3">
-                     <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('google')} disabled={isSubmitting}><Chrome className="mr-2 h-4 w-4" /> Google</Button>
-                     <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('facebook')} disabled={isSubmitting}><Facebook className="mr-2 h-4 w-4" /> Facebook</Button>
-                     <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('twitter')} disabled={isSubmitting}><Twitter className="mr-2 h-4 w-4" /> Twitter</Button>
+                     <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('google')} disabled={isSubmitting || !!socialProviderSubmitting}>
+                        {socialProviderSubmitting === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Chrome className="mr-2 h-4 w-4" />} Google
+                    </Button>
+                     <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('facebook')} disabled={isSubmitting || !!socialProviderSubmitting}>
+                        {socialProviderSubmitting === 'facebook' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Facebook className="mr-2 h-4 w-4" />} Facebook
+                    </Button>
+                     <Button variant="outline" className="btn-animated w-full" onClick={() => handleSocialLogin('twitter')} disabled={isSubmitting || !!socialProviderSubmitting}>
+                         {socialProviderSubmitting === 'twitter' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Twitter className="mr-2 h-4 w-4" />} Twitter
+                    </Button>
                  </div>
               </CardContent>
                <CardFooter className="text-xs text-muted-foreground text-center block">
@@ -255,5 +278,14 @@ export default function AuthPage() {
 .animate-fade-in {
   animation: fadeIn 0.5s ease-in-out forwards;
 }
-*/
 
+// Add spin animation (Tailwind typically includes this by default)
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+*/
+```

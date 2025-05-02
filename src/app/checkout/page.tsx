@@ -12,9 +12,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Truck, CreditCard, ShieldCheck } from 'lucide-react';
+import { Truck, CreditCard, ShieldCheck, Loader2 } from 'lucide-react'; // Import Loader2
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation'; // For redirection after order
+import Link from 'next/link';
+
 
 // Schema for form validation using Zod
 const shippingSchema = z.object({
@@ -61,6 +63,7 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState<'shipping' | 'payment' | 'confirmation'>('shipping');
   const { toast } = useToast();
   const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState(false); // State for processing payment
 
   const shippingForm = useForm<ShippingFormValues>({
     resolver: zodResolver(shippingSchema),
@@ -88,20 +91,37 @@ export default function CheckoutPage() {
     window.scrollTo(0, 0); // Scroll to top for next step
   };
 
-   const onPaymentSubmit: SubmitHandler<PaymentFormValues> = (data) => {
+   const onPaymentSubmit: SubmitHandler<PaymentFormValues> = async (data) => {
+    setIsProcessing(true); // Start processing
     console.log('Payment Data:', data);
-    // Simulate order placement
-    toast({
-        title: "Order Placed Successfully!",
-        description: "Thank you for your purchase. You'll receive a confirmation email shortly.",
-        duration: 5000, // Keep toast longer
-    });
-    setCurrentStep('confirmation'); // Move to confirmation (optional state)
-     // Redirect to a thank you page or clear cart after a delay
-     setTimeout(() => {
-        // Clear cart logic here
-        router.push('/'); // Redirect to homepage
-     }, 3000);
+    // Simulate order placement API call
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
+      // ** TODO: Implement actual order placement logic here **
+      // (e.g., call Firebase function, interact with Stripe, etc.)
+
+      toast({
+          title: "Order Placed Successfully!",
+          description: "Thank you for your purchase. You'll receive a confirmation email shortly.",
+          duration: 5000, // Keep toast longer
+      });
+      setCurrentStep('confirmation'); // Move to confirmation (optional state)
+      // Redirect to a thank you page or clear cart after a delay
+      setTimeout(() => {
+          // Clear cart logic here
+          router.push('/'); // Redirect to homepage
+      }, 3000);
+
+    } catch (error: any) {
+        console.error("Order placement error:", error);
+        toast({
+            title: "Order Failed",
+            description: error.message || "There was an issue placing your order. Please try again.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsProcessing(false); // Stop processing
+    }
   };
 
 
@@ -114,15 +134,15 @@ export default function CheckoutPage() {
         <div className="flex-grow lg:w-2/3">
            {/* Step Indicators (Optional) */}
            <div className="flex justify-center space-x-4 md:space-x-8 mb-8">
-             <div className={`flex items-center gap-2 ${currentStep === 'shipping' ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+             <div className={`flex items-center gap-2 ${currentStep === 'shipping' ? 'text-primary font-semibold animate-pulse' : 'text-muted-foreground'}`}>
                <Truck className="h-5 w-5"/> Shipping
              </div>
-             <Separator orientation="vertical" className={`h-6 ${currentStep === 'payment' || currentStep === 'confirmation' ? 'bg-primary' : 'bg-border'}`}/>
-              <div className={`flex items-center gap-2 ${currentStep === 'payment' ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+             <Separator orientation="vertical" className={`h-6 transition-colors duration-500 ${currentStep === 'payment' || currentStep === 'confirmation' ? 'bg-primary' : 'bg-border'}`}/>
+              <div className={`flex items-center gap-2 ${currentStep === 'payment' ? 'text-primary font-semibold animate-pulse' : 'text-muted-foreground'}`}>
                <CreditCard className="h-5 w-5"/> Payment
              </div>
-              <Separator orientation="vertical" className={`h-6 ${currentStep === 'confirmation' ? 'bg-primary' : 'bg-border'}`}/>
-             <div className={`flex items-center gap-2 ${currentStep === 'confirmation' ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+              <Separator orientation="vertical" className={`h-6 transition-colors duration-500 ${currentStep === 'confirmation' ? 'bg-primary' : 'bg-border'}`}/>
+             <div className={`flex items-center gap-2 ${currentStep === 'confirmation' ? 'text-primary font-semibold animate-pulse' : 'text-muted-foreground'}`}>
                 <ShieldCheck className="h-5 w-5"/> Confirmation
             </div>
            </div>
@@ -220,7 +240,7 @@ export default function CheckoutPage() {
                            />
                        </div>
 
-                      <Button type="submit" size="lg" className="w-full btn-animated btn-animated-accent mt-6">
+                      <Button type="submit" size="lg" className="w-full btn-animated btn-animated-accent mt-6" disabled={isProcessing}>
                         Continue to Payment
                       </Button>
                     </form>
@@ -309,11 +329,15 @@ export default function CheckoutPage() {
 
 
                        <div className="flex flex-col sm:flex-row gap-4 mt-6">
-                         <Button variant="outline" onClick={() => setCurrentStep('shipping')} className="w-full sm:w-auto btn-animated">
+                         <Button variant="outline" onClick={() => setCurrentStep('shipping')} className="w-full sm:w-auto btn-animated" disabled={isProcessing}>
                             Back to Shipping
                          </Button>
-                         <Button type="submit" size="lg" className="w-full sm:flex-1 btn-animated btn-animated-accent" disabled={paymentForm.formState.isSubmitting}>
-                           {paymentForm.formState.isSubmitting ? 'Processing...' : 'Place Order'}
+                         <Button type="submit" size="lg" className="w-full sm:flex-1 btn-animated btn-animated-accent" disabled={isProcessing || !paymentForm.formState.isValid}>
+                           {isProcessing ? (
+                             <>
+                               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...
+                             </>
+                           ) : 'Place Order'}
                          </Button>
                        </div>
                      </form>
@@ -326,7 +350,7 @@ export default function CheckoutPage() {
             {currentStep === 'confirmation' && (
                  <Card className="text-center p-8 shadow-lg animate-fade-in">
                     <CardHeader>
-                         <ShieldCheck className="h-16 w-16 text-green-500 mx-auto mb-4"/>
+                         <ShieldCheck className="h-16 w-16 text-green-500 mx-auto mb-4 animate-bounce"/>
                         <CardTitle className="text-3xl">Order Confirmed!</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -342,7 +366,7 @@ export default function CheckoutPage() {
 
         {/* Order Summary Sidebar */}
         <div className="lg:w-1/3">
-          <div className="sticky top-20 border p-6 rounded-lg shadow-sm bg-card space-y-4">
+          <div className="sticky top-20 border p-6 rounded-lg shadow-sm bg-card space-y-4 animate-fade-in">
             <h2 className="text-2xl font-semibold mb-4">Order Summary</h2>
             <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
                 {mockOrderItems.map(item => (
@@ -374,12 +398,28 @@ export default function CheckoutPage() {
                     <Button
                         className="w-full mt-4 btn-animated btn-animated-accent"
                         size="lg"
-                        disabled={currentStep !== 'shipping'} // Disable if not on shipping step yet
+                        disabled={currentStep !== 'shipping' || isProcessing} // Disable if not on shipping step yet or processing
                         onClick={() => shippingForm.handleSubmit(onShippingSubmit)()} // Trigger shipping submit
                     >
                         Continue to Payment
                     </Button>
                 )}
+               {currentStep === 'payment' && (
+                   <Button
+                     type="submit" // Important: Needs to match the form's submit
+                     form="paymentForm" // Associate with the correct form ID if needed
+                     size="lg"
+                     className="w-full mt-4 btn-animated btn-animated-accent"
+                     disabled={isProcessing || !paymentForm.formState.isValid}
+                     onClick={paymentForm.handleSubmit(onPaymentSubmit)} // Trigger payment submit
+                   >
+                     {isProcessing ? (
+                       <>
+                         <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...
+                       </>
+                     ) : 'Place Order'}
+                   </Button>
+               )}
           </div>
         </div>
       </div>
@@ -397,6 +437,31 @@ export default function CheckoutPage() {
 .animate-fade-in {
   animation: fadeIn 0.5s ease-in-out forwards;
 }
+
+@keyframes pulse {
+  50% { opacity: .5; }
+}
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+  50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
+}
+.animate-bounce {
+    animation: bounce 1s infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 */
 // Ensure tailwind config includes the animation:
-// theme: { extend: { keyframes: { 'fade-in': ... }, animation: { 'fade-in': ... } } }
+// theme: { extend: { keyframes: { 'fade-in': ..., 'pulse': ..., 'bounce': ..., 'spin': ... }, animation: { 'fade-in': ..., 'pulse': ..., 'bounce': ..., 'spin': ... } } }
+```

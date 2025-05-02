@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
-import { GeistSans, GeistMono } from 'geist/font'; // Corrected import
+import { GeistSans } from 'geist/font/sans';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
 
-// No changes needed for instantiation when using `geist` package directly
-// const geistSans = GeistSans({ ... }); <-- No longer needed, variables are managed differently
 
 export const metadata: Metadata = {
   title: 'ChronoThreads',
@@ -20,11 +18,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", GeistSans.variable, GeistMono.variable)}>
+    // Apply GeistSans variable directly to html tag
+    <html lang="en" className={cn("h-full", GeistSans.variable)}>
       <body
         className={cn(
           'relative h-full font-sans antialiased',
-          // Variables are applied in <html> tag now
+          // GeistSans.className // Apply font class directly to body
         )}
       >
         <div className="flex flex-col min-h-screen">
