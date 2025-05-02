@@ -1,14 +1,18 @@
 // src/app/admin/layout.tsx
+'use client'; // Add 'use client' directive
+
 import type { Metadata } from 'next';
 import { AdminSidebar, AdminMobileSidebarTrigger } from '@/components/admin/admin-sidebar'; // Import trigger
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { Sheet } from '@/components/ui/sheet'; // Import Sheet root for context
 
-export const metadata: Metadata = {
-  title: 'ChronoThreads Admin',
-  description: 'Admin dashboard for ChronoThreads',
-};
+// Metadata should ideally be moved to a Server Component parent if possible,
+// but for simplicity, we keep it here (though 'use client' might affect it)
+// export const metadata: Metadata = {
+//   title: 'ChronoThreads Admin',
+//   description: 'Admin dashboard for ChronoThreads',
+// };
 
 export default function AdminLayout({
   children,
