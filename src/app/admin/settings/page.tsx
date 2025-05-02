@@ -1,4 +1,6 @@
 // src/app/admin/settings/page.tsx
+'use client'; // Add 'use client' directive
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
