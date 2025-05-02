@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { ShoppingCart, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet'; // Added SheetClose
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils'; // Import cn for conditional classes
-import { Separator } from '@/components/ui/separator'; // Import Separator
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator'; // Ensure Separator is imported
 
 const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -81,11 +81,9 @@ const Header = () => {
                       href="/cart"
                       className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                     >
-                      {/* Wrap icon and text in a single span */}
-                      <span>
-                        <ShoppingCart className="h-5 w-5 inline-block mr-3" />
-                        Cart
-                      </span>
+                       {/* Removed the wrapping <span> */}
+                       <ShoppingCart className="h-5 w-5 inline-block mr-3" />
+                       Cart
                     </Link>
                  </SheetClose>
                  <SheetClose asChild>
@@ -93,11 +91,9 @@ const Header = () => {
                       href="/auth"
                       className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                     >
-                      {/* Wrap icon and text in a single span */}
-                      <span>
-                        <User className="h-5 w-5 inline-block mr-3" />
-                        Account
-                      </span>
+                       {/* Removed the wrapping <span> */}
+                       <User className="h-5 w-5 inline-block mr-3" />
+                       Account
                     </Link>
                   </SheetClose>
               </nav>
