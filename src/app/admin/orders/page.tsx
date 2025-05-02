@@ -2,7 +2,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { mockOrders, Order, OrderStatus } from '@/lib/admin-mock-data';
+// Import mockCustomers here
+import { mockOrders, Order, OrderStatus, mockCustomers } from '@/lib/admin-mock-data';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -87,7 +88,7 @@ export default function AdminOrdersPage() {
                             order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilters.length === 0 || statusFilters.includes(order.status);
       return matchesSearch && matchesStatus;
-    });
+    }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()); // Sort by newest first
   }, [orders, searchTerm, statusFilters]);
 
   // Pagination logic
@@ -267,7 +268,7 @@ export default function AdminOrdersPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                </motion.tr> // End motion.tr - Ensure no whitespace before/after TableCells
+                </motion.tr>
               ))
             ) : (
               <TableRow>
@@ -289,7 +290,7 @@ export default function AdminOrdersPage() {
            className="flex justify-between items-center pt-4"
          >
             <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
+                Page {currentPage} of {totalPages} ({filteredOrders.length} total orders)
             </span>
             <div className="flex gap-2">
               <Button
