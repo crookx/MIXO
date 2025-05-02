@@ -1,7 +1,7 @@
 // src/app/admin/customers/[id]/orders/page.tsx
 'use client';
 
-import { useState, useMemo, useEffect, use } from 'react';
+import { useState, useMemo, useEffect, use } from 'react'; // Added 'use'
 import { mockOrders, Order, OrderStatus, mockCustomers, Customer } from '@/lib/admin-mock-data';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,11 +58,11 @@ const getStatusBadgeClass = (status: OrderStatus): string => {
 };
 
 interface CustomerOrdersPageProps {
-    params: { id: string }; // Adjusted for use(params)
+    params: Promise<{ id: string }>; // Changed to Promise
 }
 
-export default function CustomerOrdersPage({ params }: CustomerOrdersPageProps) { // Adjusted for use(params)
-  // const params = use(paramsPromise); // No longer needed with direct params access
+export default function CustomerOrdersPage({ params: paramsPromise }: CustomerOrdersPageProps) { // Renamed params to paramsPromise
+  const params = use(paramsPromise); // Unwrap the promise using React.use()
   const customerId = params.id;
 
   const router = useRouter();
@@ -311,7 +311,7 @@ export default function CustomerOrdersPage({ params }: CustomerOrdersPageProps) 
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                </motion.tr> // Ensure no whitespace before/after TableCells
+                </motion.tr>
               ))
             ) : (
               <TableRow>
