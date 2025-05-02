@@ -1,7 +1,7 @@
 'use client'; // Needed for carousel interaction and potential state
 
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react'; // Import use
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -43,10 +43,14 @@ const getRelatedProducts = (currentProductId: string) => {
   return allProducts.filter(p => p.id !== currentProductId).slice(0, 4); // Return 4 related products
 };
 
+interface ProductDetailsPageProps {
+  params: Promise<{ id: string }>; // Define params as a Promise
+}
 
-export default function ProductDetailsPage({ params }: { params: { id: string } }) {
-  const product = getProductDetails(params.id);
-  const relatedProducts = getRelatedProducts(params.id);
+export default function ProductDetailsPage({ params }: ProductDetailsPageProps) {
+  const resolvedParams = use(params); // Unwrap the params Promise
+  const product = getProductDetails(resolvedParams.id);
+  const relatedProducts = getRelatedProducts(resolvedParams.id);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(product.sizes?.[0]);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(product.colors?.[0]);
   const { toast } = useToast(); // Initialize useToast
