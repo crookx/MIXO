@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/s
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils'; // Import cn for conditional classes
+import { Separator } from '@/components/ui/separator'; // Import Separator
 
 const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -42,7 +43,7 @@ const Header = () => {
     <header
       className={cn(
         `sticky top-0 z-50 w-full border-b transition-all duration-300 ease-in-out`,
-        isSticky ? 'bg-background/90 shadow-md backdrop-blur-md' : 'bg-background' // Enhanced sticky effect
+        isSticky ? 'bg-background/90 shadow-md backdrop-filter backdrop-blur-lg bg-opacity-80' : 'bg-background' // Enhanced sticky effect with blur
       )}
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
