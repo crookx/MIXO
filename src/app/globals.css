@@ -121,278 +121,288 @@
   }
 }
 
-/* Global Styles */
-.container {
-  @apply max-w-7xl;
-}
+@layer components {
+    /* Button Animations & Styles */
+    .btn-animated {
+        @apply relative overflow-hidden transition-transform duration-300 ease-out active:scale-[0.97] shadow-sm hover:shadow-md;
+        will-change: transform; /* Optimized for transform */
+    }
 
-/* Button Animations & Styles */
-.btn-animated {
-  @apply relative overflow-hidden transition-transform duration-300 ease-out active:scale-[0.97] shadow-sm hover:shadow-md;
-  will-change: transform; /* Optimized for transform */
-}
+    .btn-animated::after {
+        @apply content-[''] absolute top-1/2 left-1/2 w-0 h-0 bg-foreground/10 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out;
+        will-change: width, height; /* Optimized for size change */
+        z-index: 0;
+    }
 
-.btn-animated::after {
-  @apply content-[''] absolute top-1/2 left-1/2 w-0 h-0 bg-foreground/10 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out;
-  will-change: width, height; /* Optimized for size change */
-  z-index: 0;
-}
+    .btn-animated:hover::after {
+        @apply w-[220%] h-[220%];
+    }
 
-.btn-animated:hover::after {
-  @apply w-[220%] h-[220%];
-}
+    /* Ensure button content is above the pseudo-element */
+    .btn-animated > * {
+        @apply relative z-[1];
+    }
 
-/* Ensure button content is above the pseudo-element */
-.btn-animated > * {
-  @apply relative z-[1];
-}
-
-/* Accent button specific animation */
-.btn-animated-accent {
-  @apply bg-accent text-accent-foreground hover:bg-accent/90;
-}
-.btn-animated-accent::after {
-   @apply bg-accent-foreground/15; /* Different color for accent ripple */
-}
-
-/* Floating Label Styles */
-.floating-label {
-  @apply relative mt-2; /* Added margin-top */
-}
-
-.floating-label > label {
-  @apply absolute top-1/2 left-3 transform -translate-y-1/2 text-base text-muted-foreground pointer-events-none transition-all duration-200 ease-out bg-background px-1;
-  will-change: top, font-size, transform, color; /* Optimized for floating label animation */
-  z-index: 1;
-}
-
-/* Input/Textarea adjustments for floating label */
-.floating-label > input,
-.floating-label > textarea {
-   @apply pt-5 pb-1; /* Adjust padding for label positioning */
-   height: auto; /* Allow textarea to resize */
-}
-
-.floating-label > input:focus + label,
-.floating-label > input:not(:placeholder-shown) + label,
-.floating-label > textarea:focus + label,
-.floating-label > textarea:not(:placeholder-shown) + label {
-  @apply top-0 text-xs text-accent transform -translate-y-1/2 scale-95; /* Adjusted scale and position */
-}
+    /* Accent button specific animation */
+    .btn-animated-accent {
+        @apply bg-accent text-accent-foreground hover:bg-accent/90;
+    }
+    .btn-animated-accent::after {
+        @apply bg-accent-foreground/15; /* Different color for accent ripple */
+    }
 
 
-/* General Transitions - Removed custom .transition-all class to avoid circular dependency */
-/* Use Tailwind's `transition-all` utility directly where needed */
+    /* Floating Label Styles */
+    .floating-label {
+        @apply relative mt-2; /* Added margin-top */
+    }
 
-.transition-transform {
-   @apply transition-transform duration-300 ease-in-out;
-   will-change: transform;
-}
+    .floating-label > label {
+        @apply absolute top-1/2 left-3 transform -translate-y-1/2 text-base text-muted-foreground pointer-events-none transition-all duration-200 ease-out bg-background px-1;
+        will-change: top, font-size, transform, color; /* Optimized for floating label animation */
+        z-index: 1;
+    }
 
-.transition-opacity {
-    @apply transition-opacity duration-300 ease-in-out;
-}
+    /* Input/Textarea adjustments for floating label */
+    .floating-label > input,
+    .floating-label > textarea {
+        @apply pt-5 pb-1; /* Adjust padding for label positioning */
+        height: auto; /* Allow textarea to resize */
+    }
 
-/* Link Hover Effect */
-a {
-  @apply transition-colors duration-200 ease-in-out;
-}
-a.underline-hover {
-  @apply relative after:absolute after:bottom-[-2px] after:left-0 after:h-[1px] after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full;
-  will-change: width; /* Optimize for underline width change */
-}
-
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.animate-fade-in {
-  animation: fadeIn 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-  will-change: opacity, transform;
-}
-
-@keyframes pulse-subtle { /* Renamed to avoid conflict if needed */
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; } /* Made subtler */
-}
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  will-change: opacity;
-}
-
-@keyframes bounce-soft { /* Renamed and softened */
-  0%, 100% { transform: translateY(-10%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
-  50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); }
-}
-.animate-bounce-soft {
-    animation: bounce-soft 1.5s infinite; /* Slower bounce */
-    will-change: transform;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.animate-spin {
-  animation: spin 1s linear infinite;
-  will-change: transform;
-}
-
-/* Custom Scrollbar (Webkit) */
-::-webkit-scrollbar {
-  @apply w-2 h-2;
-}
-::-webkit-scrollbar-track {
-  @apply bg-background/80 rounded-lg; /* Slightly transparent track */
-}
-::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/50 rounded-lg border-2 border-transparent bg-clip-content transition-colors duration-300 ease-in-out; /* Added border for contrast */
-}
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/70;
-}
-
-/* Glassmorphism Effect Class (Example) */
-.glassmorphic {
-    @apply bg-clip-padding backdrop-filter backdrop-blur-lg;
-    /* Default to a subtle white tint */
-    @apply bg-white/[.1] border border-white/[.1];
-}
-.dark .glassmorphic {
-    /* Dark mode glass effect */
-    @apply bg-black/[.1] border-white/[.05];
-}
+    .floating-label > input:focus + label,
+    .floating-label > input:not(:placeholder-shown) + label,
+    .floating-label > textarea:focus + label,
+    .floating-label > textarea:not(:placeholder-shown) + label {
+        @apply top-0 text-xs text-accent transform -translate-y-1/2 scale-95; /* Adjusted scale and position */
+    }
 
 
-/* Custom Loading Spinner (Futuristic Circle) */
-@keyframes futuristic-spinner-circle {
-  0% {
-    transform: rotate(0deg);
-    stroke-dasharray: 1, 200;
-    stroke-dashoffset: 0;
-  }
-  50% {
-    stroke-dasharray: 90, 200;
-    stroke-dashoffset: -35px;
-  }
-  100% {
-    stroke-dasharray: 90, 200;
-    stroke-dashoffset: -124px;
-    transform: rotate(360deg);
-  }
+    /* General Transitions */
+    /* Use Tailwind's `transition-all`, `transition-transform`, `transition-opacity` etc. utilities directly */
+    .will-change-transform {
+        will-change: transform;
+    }
+    .will-change-opacity {
+        will-change: opacity;
+    }
+
+
+    /* Link Hover Effect */
+    a {
+        @apply transition-colors duration-200 ease-in-out;
+    }
+    a.underline-hover {
+        @apply relative after:absolute after:bottom-[-2px] after:left-0 after:h-[1px] after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full;
+        will-change: width; /* Optimize for underline width change */
+    }
+
+
+    /* Custom Scrollbar (Webkit) */
+    ::-webkit-scrollbar {
+        @apply w-2 h-2;
+    }
+    ::-webkit-scrollbar-track {
+        @apply bg-background/80 rounded-lg; /* Slightly transparent track */
+    }
+    ::-webkit-scrollbar-thumb {
+        @apply bg-muted-foreground/50 rounded-lg border-2 border-transparent bg-clip-content transition-colors duration-300 ease-in-out; /* Added border for contrast */
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-muted-foreground/70;
+    }
+
+    /* Glassmorphism Effect Class (Example) */
+    .glassmorphic {
+        @apply bg-clip-padding backdrop-filter backdrop-blur-lg;
+        /* Default to a subtle white tint */
+        @apply bg-white/[.1] border border-white/[.1];
+    }
+    .dark .glassmorphic {
+        /* Dark mode glass effect */
+        @apply bg-black/[.1] border-white/[.05];
+    }
+
+    /* Ensure input doesn't inherit strange backgrounds in floating label */
+    .floating-label > input:-webkit-autofill,
+    .floating-label > input:-webkit-autofill:hover,
+    .floating-label > input:-webkit-autofill:focus,
+    .floating-label > input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
+        -webkit-text-fill-color: hsl(var(--foreground)) !important;
+        caret-color: hsl(var(--foreground)); /* Ensure cursor color is visible */
+    }
+
+
+    /* Additional UI Polish */
+
+    /* Subtle Gradient Background Option */
+    .bg-gradient-main {
+        @apply bg-gradient-to-br from-background via-secondary to-background;
+    }
+    .dark .bg-gradient-main {
+        @apply from-background via-muted to-background;
+    }
+
+
+    /* Smooth Scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Card Glow Effect on Hover (Subtle) */
+    .card-glow {
+        @apply relative transition-all duration-300 ease-in-out;
+    }
+    .card-glow::before {
+        @apply content-[''] absolute -inset-1 rounded-lg bg-gradient-to-r from-accent/30 via-transparent to-accent/30 opacity-0 blur-md transition-opacity duration-300;
+        z-index: -1;
+        will-change: opacity;
+    }
+    .dark .card-glow::before {
+        @apply from-accent/50 via-transparent to-accent/50;
+    }
+    .card-glow:hover::before {
+        @apply opacity-50;
+    }
+
+
+    /* Input Focus Enhancement */
+    input:focus-visible, textarea:focus-visible, select:focus-visible {
+        @apply ring-2 ring-accent/80 border-transparent; /* More prominent focus ring */
+    }
+
+    /* Enhanced Separator */
+    hr.fancy {
+        @apply border-t-0 h-px bg-gradient-to-r from-transparent via-border to-transparent my-6;
+    }
+
+
+    /* Product Image Zoom Effect (Example - add to product card image) */
+    .zoom-image {
+        @apply transition-transform duration-500 ease-in-out;
+        will-change: transform;
+    }
+    .group:hover .zoom-image {
+        @apply scale-110;
+    }
+
+
+    /* Minimalistic Line Icons - Ensure icons used have thin strokes */
+
+    /* Use drop shadows for depth */
+    .drop-shadow-soft {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+    }
+    .dark .drop-shadow-soft {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+
+
+    /* Staggered Animations Utility (Requires JS to add delay) */
+    .stagger-child {
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        will-change: opacity, transform;
+    }
+
+    .stagger-child.animate-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+
+    /* Gradient Text Utility */
+    .text-gradient-accent {
+        @apply bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent;
+    }
+    .dark .text-gradient-accent {
+        @apply from-accent to-secondary;
+    }
+
+    /* Futuristic loading spinner */
+    .futuristic-spinner {
+      @apply inline-block w-12 h-12 border-4 border-accent/30 border-t-accent rounded-full animate-spin;
+      will-change: transform;
+    }
+
+    /* Pulsing glow effect */
+    .pulsing-glow {
+      @apply relative overflow-visible;
+    }
+    .pulsing-glow::before {
+      @apply content-[''] absolute -inset-1.5 rounded-full bg-accent/50 opacity-75 blur-lg animate-pulse;
+      animation-duration: 1.5s;
+      z-index: -1;
+       will-change: opacity;
+    }
+    .dark .pulsing-glow::before {
+       @apply bg-accent/70;
+    }
+
+    /* Scanline effect */
+    .scanline-effect {
+        @apply relative overflow-hidden;
+    }
+    .scanline-effect::after {
+        @apply content-[''] absolute inset-0 pointer-events-none;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+        background-size: 100% 4px;
+        animation: scanline 8s linear infinite;
+        will-change: background-position;
+    }
+    .dark .scanline-effect::after {
+        background: linear-gradient(rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.05) 50%);
+        background-size: 100% 4px;
+    }
+
 }
 
-.loading-spinner-futuristic {
-  @apply inline-block w-8 h-8;
-  animation: futuristic-spinner-circle 1.5s ease-in-out infinite;
-  will-change: transform, stroke-dasharray, stroke-dashoffset;
-}
+@layer utilities {
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+       will-change: opacity, transform;
+    }
 
-.loading-spinner-futuristic circle {
-  @apply stroke-current stroke-[4px] fill-none; /* Use text color for stroke */
-  stroke-linecap: round;
-}
+    @keyframes pulse-subtle {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    .animate-pulse-subtle {
+        animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        will-change: opacity;
+    }
 
+    @keyframes bounce-soft {
+        0%, 100% { transform: translateY(-10%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+        50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); }
+    }
+    .animate-bounce-soft {
+        animation: bounce-soft 1.5s infinite;
+        will-change: transform;
+    }
 
-/* Apply futuristic spinner animation to Loader2 icon */
-.animate-spin-futuristic {
-   animation: spin 1s linear infinite; /* Keep simple spin for icon */
-   will-change: transform;
-}
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .animate-spin {
+        animation: spin 1s linear infinite;
+         will-change: transform;
+    }
 
-/* Ensure input doesn't inherit strange backgrounds in floating label */
-.floating-label > input:-webkit-autofill,
-.floating-label > input:-webkit-autofill:hover,
-.floating-label > input:-webkit-autofill:focus,
-.floating-label > input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
-    -webkit-text-fill-color: hsl(var(--foreground)) !important;
-    caret-color: hsl(var(--foreground)); /* Ensure cursor color is visible */
-}
-
-
-/* Additional UI Polish */
-
-/* Subtle Gradient Background Option */
-.bg-gradient-main {
-  @apply bg-gradient-to-br from-background via-secondary to-background;
-}
-.dark .bg-gradient-main {
-   @apply from-background via-muted to-background;
-}
-
-
-/* Smooth Scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Card Glow Effect on Hover (Subtle) */
-.card-glow {
-   @apply relative transition-all duration-300 ease-in-out;
-}
-.card-glow::before {
-   @apply content-[''] absolute -inset-1 rounded-lg bg-gradient-to-r from-accent/30 via-transparent to-accent/30 opacity-0 blur-md transition-opacity duration-300;
-   z-index: -1;
-}
-.dark .card-glow::before {
-    @apply from-accent/50 via-transparent to-accent/50;
-}
-.card-glow:hover::before {
-   @apply opacity-50;
-}
-
-
-/* Input Focus Enhancement */
-input:focus-visible, textarea:focus-visible, select:focus-visible {
-   @apply ring-2 ring-accent/80 border-transparent; /* More prominent focus ring */
-}
-
-/* Enhanced Separator */
-hr.fancy {
-   @apply border-t-0 h-px bg-gradient-to-r from-transparent via-border to-transparent my-6;
-}
-
-
-/* Product Image Zoom Effect (Example - add to product card image) */
-.zoom-image {
-   @apply transition-transform duration-500 ease-in-out;
-}
-.group:hover .zoom-image {
-   @apply scale-110;
-}
-
-
-/* Minimalistic Line Icons - Ensure icons used have thin strokes */
-
-/* Use drop shadows for depth */
-.drop-shadow-soft {
-   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
-}
-.dark .drop-shadow-soft {
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-}
-
-
-/* Staggered Animations Utility (Requires JS to add delay) */
-.stagger-child {
-   opacity: 0;
-   transform: translateY(10px);
-   transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-}
-
-.stagger-child.animate-in {
-   opacity: 1;
-   transform: translateY(0);
-}
-
-
-/* Gradient Text Utility */
-.text-gradient-accent {
-   @apply bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent;
-}
-.dark .text-gradient-accent {
-    @apply from-accent to-secondary;
+     @keyframes scanline {
+        0% { background-position: 0 0; }
+        100% { background-position: 0 100%; }
+    }
+     .animate-scanline {
+         animation: scanline 8s linear infinite;
+         will-change: background-position;
+     }
 }
