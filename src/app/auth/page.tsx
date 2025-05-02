@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import Link from 'next/link'; // Import Link
 // Placeholder icons for social login
 import { Chrome, Facebook, Twitter } from 'lucide-react'; // Replace Chrome with Google icon if available or use SVG
 
@@ -255,3 +256,4 @@ export default function AuthPage() {
   animation: fadeIn 0.5s ease-in-out forwards;
 }
 */
+
