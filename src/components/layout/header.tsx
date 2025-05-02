@@ -9,6 +9,8 @@ import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { DialogTitle } from '@/components/ui/dialog'; // Import DialogTitle
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'; // Import VisuallyHidden
 
 const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -50,18 +52,18 @@ const Header = () => {
         <Link href="/" className="flex items-center gap-2 mr-6 transition-transform duration-300 hover:scale-105">
           {/* Logo Image */}
           <Image
-            src="https://picsum.photos/seed/logo/120/40" // Placeholder logo URL
+            src="https://picsum.photos/seed/logo/40/40" // Placeholder logo URL, ensure square ratio
             alt="ChronoThreads Logo"
-            width={120} // Adjust width as needed
-            height={40} // Adjust height as needed
-            className="h-8 w-auto" // Maintain aspect ratio
+            width={40} // Adjust width for circular frame
+            height={40} // Adjust height for circular frame
+            className="h-10 w-10 rounded-full object-cover" // Add rounded-full, object-cover, adjust h/w
             data-ai-hint="futuristic tech logo"
             priority // Load logo early
           />
           {/* Optional: Keep text if needed */}
-          {/* <span className="text-2xl font-bold text-primary hidden sm:inline-block">
+          <span className="text-2xl font-bold text-primary hidden sm:inline-block">
             ChronoThreads
-          </span> */}
+          </span>
         </Link>
 
         {isMobile ? (
@@ -73,49 +75,53 @@ const Header = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[280px] bg-background p-6">
+                 {/* Add DialogTitle for accessibility */}
+                <DialogTitle>
+                    <VisuallyHidden>Mobile Navigation Menu</VisuallyHidden>
+                </DialogTitle>
               <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-primary mb-8" onClick={() => setIsSheetOpen(false)}>
                  <Image
-                    src="https://picsum.photos/seed/logo/100/30" // Placeholder logo URL
+                    src="https://picsum.photos/seed/logo/30/30" // Placeholder logo URL
                     alt="ChronoThreads Logo"
-                    width={100}
+                    width={30}
                     height={30}
-                    className="h-7 w-auto"
+                    className="h-7 w-7 rounded-full object-cover" // Add rounded-full
                     data-ai-hint="futuristic tech logo"
                     priority
                   />
                   {/* Optional Text for Mobile Menu */}
-                  {/* ChronoThreads */}
+                  ChronoThreads
               </Link>
               <nav className="grid gap-4 text-lg font-medium">
                 {navItems.map((item) => (
-                  <SheetClose asChild key={item.href}>
-                    <Link
-                      href={item.href}
-                      className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                    >
-                      {item.label}
-                    </Link>
-                  </SheetClose>
+                   <SheetClose asChild key={item.href}>
+                       <Link
+                           href={item.href}
+                           className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                       >
+                           {item.label}
+                       </Link>
+                   </SheetClose>
                 ))}
                 <Separator className="my-2" />
-                <SheetClose asChild>
-                  <Link
-                    href="/cart"
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <ShoppingCart className="h-5 w-5 inline-block mr-3" />
-                    Cart
-                  </Link>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/auth"
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <User className="h-5 w-5 inline-block mr-3" />
-                    Account
-                  </Link>
-                </SheetClose>
+                 <SheetClose asChild>
+                   <Link
+                       href="/cart"
+                       className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                   >
+                       <ShoppingCart className="h-5 w-5 inline-block mr-3" />
+                       Cart
+                   </Link>
+                 </SheetClose>
+                  <SheetClose asChild>
+                   <Link
+                       href="/auth"
+                       className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                   >
+                       <User className="h-5 w-5 inline-block mr-3" />
+                       Account
+                   </Link>
+                  </SheetClose>
               </nav>
             </SheetContent>
           </Sheet>
