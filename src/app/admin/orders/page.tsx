@@ -27,6 +27,9 @@ import { MoreHorizontal, Search, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion'; // Import motion
+import { AnimatedSpinner } from '@/components/ui/animated-spinner'; // Import AnimatedSpinner
+
 
 const ITEMS_PER_PAGE = 10;
 
@@ -116,7 +119,12 @@ export default function AdminOrdersPage() {
 
 
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col gap-6"
+    >
       <div className="flex justify-between items-center">
         <h1 className="text-2xl md:text-3xl font-bold">Orders</h1>
         {/* Optional: Add Order button? */}
@@ -175,7 +183,12 @@ export default function AdminOrdersPage() {
        </div>
 
       {/* Orders Table */}
-      <div className="border rounded-lg overflow-hidden shadow-sm">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.5 }}
+        className="border rounded-lg overflow-hidden shadow-sm card-glow" // Added card-glow
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -189,22 +202,25 @@ export default function AdminOrdersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-             {isLoading && paginatedOrders.length === 0 ? ( // Show skeleton only if loading AND no data displayed yet
-              // Skeleton Loading Rows
-              Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
-                <TableRow key={`skeleton-${index}`}>
-                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                  <TableCell className="text-right"><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-28" /></TableCell>
-                  <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-full ml-auto" /></TableCell>
-                </TableRow>
-              ))
+             {isLoading ? ( // Show skeleton only if loading
+              // Skeleton Loading Rows with Futuristic Spinner
+              <TableRow>
+                <TableCell colSpan={7} className="h-60 text-center">
+                  <div className="flex flex-col items-center justify-center gap-4">
+                     <AnimatedSpinner className="text-accent" />
+                     <span className="text-muted-foreground">Loading orders...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
             ) : paginatedOrders.length > 0 ? (
-              paginatedOrders.map((order) => (
-                <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
+              paginatedOrders.map((order, index) => (
+                <motion.tr // Use motion.tr here
+                  key={order.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
+                >
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.customerName}</TableCell>
                   <TableCell className="text-muted-foreground">{order.customerEmail}</TableCell>
@@ -243,7 +259,7 @@ export default function AdminOrdersPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                </TableRow>
+                </motion.tr> // End motion.tr
               ))
             ) : (
               <TableRow>
@@ -254,11 +270,16 @@ export default function AdminOrdersPage() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </motion.div>
 
        {/* Pagination Controls */}
        {totalPages > 1 && (
-         <div className="flex justify-between items-center pt-4">
+         <motion.div
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           transition={{ delay: 0.2, duration: 0.5 }}
+           className="flex justify-between items-center pt-4"
+         >
             <span className="text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages}
             </span>
@@ -282,8 +303,8 @@ export default function AdminOrdersPage() {
                 Next
               </Button>
             </div>
-         </div>
+         </motion.div>
        )}
-    </div>
+    </motion.div>
   );
 }

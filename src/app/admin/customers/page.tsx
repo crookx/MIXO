@@ -24,6 +24,9 @@ import {
 import { MoreHorizontal, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion'; // Import motion
+import { AnimatedSpinner } from '@/components/ui/animated-spinner'; // Import AnimatedSpinner
+
 
 const ITEMS_PER_PAGE = 10;
 
@@ -76,7 +79,12 @@ export default function AdminCustomersPage() {
 
 
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col gap-6"
+    >
       <div className="flex justify-between items-center">
         <h1 className="text-2xl md:text-3xl font-bold">Customers</h1>
         {/* Optional: Add Customer button? */}
@@ -98,7 +106,12 @@ export default function AdminCustomersPage() {
       </div>
 
       {/* Customers Table */}
-      <div className="border rounded-lg overflow-hidden shadow-sm">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.5 }}
+        className="border rounded-lg overflow-hidden shadow-sm card-glow" // Added card-glow
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -111,21 +124,25 @@ export default function AdminCustomersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-             {isLoading && paginatedCustomers.length === 0 ? (
-               // Skeleton Loading Rows
-              Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
-                <TableRow key={`skeleton-${index}`}>
-                  <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                  <TableCell className="text-right"><Skeleton className="h-5 w-12 ml-auto" /></TableCell>
-                  <TableCell className="text-right"><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-28" /></TableCell>
-                  <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-full ml-auto" /></TableCell>
-                </TableRow>
-              ))
+             {isLoading ? (
+               // Skeleton Loading Rows with Futuristic Spinner
+              <TableRow>
+                <TableCell colSpan={6} className="h-60 text-center">
+                  <div className="flex flex-col items-center justify-center gap-4">
+                     <AnimatedSpinner className="text-accent" />
+                     <span className="text-muted-foreground">Loading customers...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
              ) : paginatedCustomers.length > 0 ? (
-              paginatedCustomers.map((customer) => (
-                <TableRow key={customer.id} className="hover:bg-muted/50 transition-colors">
+              paginatedCustomers.map((customer, index) => (
+                <motion.tr // Use motion.tr here
+                  key={customer.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
+                >
                   <TableCell className="font-medium">{customer.name}</TableCell>
                   <TableCell className="text-muted-foreground">{customer.email}</TableCell>
                   <TableCell className="text-right">{customer.totalOrders}</TableCell>
@@ -155,7 +172,7 @@ export default function AdminCustomersPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                </TableRow>
+                </motion.tr> // End motion.tr
               ))
             ) : (
               <TableRow>
@@ -166,11 +183,16 @@ export default function AdminCustomersPage() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </motion.div>
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex justify-between items-center pt-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="flex justify-between items-center pt-4"
+        >
           <span className="text-sm text-muted-foreground">
             Page {currentPage} of {totalPages}
           </span>
@@ -194,8 +216,8 @@ export default function AdminCustomersPage() {
               Next
             </Button>
           </div>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }
