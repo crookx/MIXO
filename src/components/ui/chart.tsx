@@ -1,3 +1,4 @@
+// src/components/ui/chart.tsx
 "use client"
 
 import * as React from "react"
@@ -355,11 +356,59 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config]
 }
 
+// Export Recharts components
+const ChartArea = RechartsPrimitive.AreaChart
+const ChartBar = RechartsPrimitive.BarChart
+const ChartLine = RechartsPrimitive.LineChart
+const ChartComposed = RechartsPrimitive.ComposedChart
+const ChartPie = RechartsPrimitive.PieChart
+const ChartRadar = RechartsPrimitive.RadarChart
+const ChartRadial = RechartsPrimitive.RadialBarChart
+const ChartScatter = RechartsPrimitive.ScatterChart
+
+const ChartXAxis = RechartsPrimitive.XAxis
+const ChartYAxis = RechartsPrimitive.YAxis
+const ChartCartesianGrid = RechartsPrimitive.CartesianGrid
+const ChartBrush = RechartsPrimitive.Brush
+const ChartReferenceLine = RechartsPrimitive.ReferenceLine
+const ChartReferenceArea = RechartsPrimitive.ReferenceArea
+const ChartReferenceDot = RechartsPrimitive.ReferenceDot
+
+const ChartAreaLayer = RechartsPrimitive.Area
+const ChartBarLayer = RechartsPrimitive.Bar
+const ChartLineLayer = RechartsPrimitive.Line
+const ChartScatterLayer = RechartsPrimitive.Scatter
+const ChartPieLayer = RechartsPrimitive.Pie
+const ChartRadarLayer = RechartsPrimitive.Radar
+const ChartRadialLayer = RechartsPrimitive.RadialBar
+
 export {
+  ChartArea,
+  ChartAreaLayer,
+  ChartBar,
+  ChartBarLayer,
+  ChartBrush,
+  ChartCartesianGrid,
+  ChartComposed,
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
+  ChartLine,
+  ChartLineLayer,
+  ChartPie,
+  ChartPieLayer,
+  ChartRadar,
+  ChartRadarLayer,
+  ChartRadial,
+  ChartRadialLayer,
+  ChartReferenceArea,
+  ChartReferenceDot,
+  ChartReferenceLine,
+  ChartScatter,
+  ChartScatterLayer,
   ChartStyle,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartXAxis,
+  ChartYAxis,
 }
