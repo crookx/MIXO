@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, User, Mail, MapPin, Package, DollarSign, CreditCard, Calendar, Hash, Loader2 } from 'lucide-react'; // Added Hash
+import { ArrowLeft, User, Mail, MapPin, Package, DollarSign, CreditCard, Calendar, Hash, Loader2, Phone } from 'lucide-react'; // Added Hash, Phone
 import { mockOrders, Order, OrderStatus, mockCustomers, Customer, mockProducts, Product } from '@/lib/admin-mock-data'; // Import necessary data
 import { Skeleton } from '@/components/ui/skeleton';
 import { FormattedDate } from '@/components/ui/formatted-date';
