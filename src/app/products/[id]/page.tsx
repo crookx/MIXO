@@ -13,7 +13,8 @@ import { useToast } from "@/hooks/use-toast"; // Import useToast
 import { ShoppingCart, ZoomIn, Loader2 } from 'lucide-react'; // Added Loader2
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"; // For zoom
 import { Skeleton } from "@/components/ui/skeleton"; // Added Skeleton
-
+import { motion } from "framer-motion"; // Added framer-motion
+import { AnimatedSpinner } from '@/components/ui/animated-spinner'; // Added AnimatedSpinner
 
 // Mock Data (should fetch based on params.id in a real app)
 const getProductDetails = async (id: string) => { // Make async
@@ -53,10 +54,14 @@ const getRelatedProducts = async (currentProductId: string) => { // Make async
 };
 
 interface ProductDetailsPageProps {
-  params: { id: string }; // Keep params as object
+  params: Promise<{ id: string }>; // Update params type to Promise
 }
 
-export default function ProductDetailsPage({ params }: ProductDetailsPageProps) {
+export default function ProductDetailsPage({ params: paramsPromise }: ProductDetailsPageProps) { // Rename params to paramsPromise
+    // Use React.use to unwrap the params promise
+    const params = use(paramsPromise);
+    const productId = params.id; // Access id after unwrapping
+
     // Fetch data using useEffect and useState to handle client-side loading state
     const [product, setProduct] = useState<Awaited<ReturnType<typeof getProductDetails>> | null>(null);
     const [relatedProducts, setRelatedProducts] = useState<Awaited<ReturnType<typeof getRelatedProducts>> | null>(null);
@@ -70,9 +75,10 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
         const fetchData = async () => {
             setIsLoading(true);
             try {
+                // Use the unwrapped productId
                 const [productData, relatedData] = await Promise.all([
-                    getProductDetails(params.id),
-                    getRelatedProducts(params.id)
+                    getProductDetails(productId),
+                    getRelatedProducts(productId)
                 ]);
                 setProduct(productData);
                 setRelatedProducts(relatedData);
@@ -87,8 +93,12 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
                 setIsLoading(false);
             }
         };
-        fetchData();
-    }, [params.id, toast]); // Re-fetch if params.id changes
+        // Check if productId exists before fetching
+        if (productId) {
+            fetchData();
+        }
+    }, [productId, toast]); // Use productId in the dependency array
+
 
    const handleAddToCart = async () => { // Make async
      setIsAddingToCart(true); // Start loading
@@ -120,37 +130,12 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
    // Loading State UI
    if (isLoading) {
     return (
-        <div className="container mx-auto px-4 md:px-6 py-8 animate-pulse">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-            {/* Image Skeleton */}
-            <Skeleton className="w-full aspect-[3/4] rounded-lg" />
-            {/* Details Skeleton */}
-            <div className="flex flex-col justify-center space-y-4">
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-6 w-1/4" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-                <Separator className="my-6" />
-                 <div className="space-y-4">
-                    <Skeleton className="h-6 w-1/6" />
-                    <div className="flex gap-2">
-                        <Skeleton className="h-10 w-12 rounded-md" />
-                        <Skeleton className="h-10 w-12 rounded-md" />
-                        <Skeleton className="h-10 w-12 rounded-md" />
-                    </div>
-                 </div>
-                 <div className="space-y-4">
-                     <Skeleton className="h-6 w-1/6" />
-                     <div className="flex gap-3">
-                        <Skeleton className="h-10 w-24 rounded-md" />
-                         <Skeleton className="h-10 w-24 rounded-md" />
-                    </div>
-                 </div>
-                <Skeleton className="h-12 w-full md:w-40 rounded-md mt-4" />
-            </div>
-          </div>
-           {/* Related Products Skeleton */}
-           <section className="mt-16 space-y-6">
+        <div className="container mx-auto px-4 md:px-6 py-8">
+           <div className="flex justify-center items-center min-h-[60vh]">
+             <AnimatedSpinner /> {/* Use Futuristic Spinner */}
+           </div>
+            {/* Related Products Skeleton */}
+           <section className="mt-16 space-y-6 opacity-50"> {/* Make skeleton less prominent */}
              <Skeleton className="h-8 w-1/3" />
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                 {Array.from({ length: 4 }).map((_, index) => (
@@ -177,7 +162,12 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
     <div className="container mx-auto px-4 md:px-6 py-8">
       <div className="grid md:grid-cols-2 gap-8 md:gap-12">
         {/* Product Image Carousel */}
-        <div className="relative group animate-fade-in"> {/* Added animation */}
+        <motion.div
+            className="relative group"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           <Carousel className="w-full aspect-[3/4]" opts={{ loop: true }}>
             <CarouselContent>
               {product.images.map((imgSrc, index) => (
@@ -199,9 +189,14 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
                                 data-loaded="false" // Custom attribute for loading state
                                 onLoad={(e) => e.currentTarget.setAttribute('data-loaded', 'true')} // Set loaded state
                               />
-                               <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20">
+                               <motion.div
+                                    className="absolute inset-0 bg-black/10 flex items-center justify-center z-20"
+                                    initial={{ opacity: 0 }}
+                                    whileHover={{ opacity: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                >
                                   <ZoomIn className="h-12 w-12 text-white/80" />
-                              </div>
+                              </motion.div>
                           </CardContent>
                         </Card>
                       </DialogTrigger>
@@ -218,18 +213,23 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
                  </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-white bg-black/30 hover:bg-black/50 border-none btn-animated" /> {/* Added animation */}
-            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-white bg-black/30 hover:bg-black/50 border-none btn-animated" /> {/* Added animation */}
+             <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-white bg-black/30 hover:bg-black/50 border-none btn-animated opacity-50 hover:opacity-100 transition-opacity" />
+             <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-white bg-black/30 hover:bg-black/50 border-none btn-animated opacity-50 hover:opacity-100 transition-opacity" />
           </Carousel>
-        </div>
+        </motion.div>
 
         {/* Product Details */}
-        <div className="flex flex-col justify-center animate-fade-in" style={{ animationDelay: '0.1s' }}> {/* Added staggered animation */}
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{product.name}</h1>
+        <motion.div
+            className="flex flex-col justify-center"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+        >
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-gradient-accent">{product.name}</h1> {/* Added gradient */}
           <p className="text-2xl text-primary mb-4">${product.price.toFixed(2)}</p>
-          <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p> {/* Improved leading */}
+          <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p>
 
-          <Separator className="mb-6" />
+          <Separator className="mb-6 fancy" /> {/* Used fancy separator */}
 
           {/* Size Selection */}
           {product.sizes && product.sizes.length > 0 && (
@@ -241,15 +241,20 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
                 className="flex flex-wrap gap-2"
               >
                 {product.sizes.map((size) => (
-                  <div key={size} className="flex items-center">
+                  <motion.div
+                      key={size}
+                      className="flex items-center"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                  >
                     <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
                     <Label
                       htmlFor={`size-${size}`}
-                      className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-3 px-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground [&:has([data-state=checked])]:border-primary transition-all duration-200 cursor-pointer transform hover:scale-105 active:scale-95" // Enhanced styling and transitions
+                      className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-3 px-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground [&:has([data-state=checked])]:border-primary transition-all duration-200 cursor-pointer"
                     >
                       {size}
                     </Label>
-                  </div>
+                  </motion.div>
                 ))}
               </RadioGroup>
             </div>
@@ -265,17 +270,22 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
                   className="flex flex-wrap gap-3"
                 >
                  {product.colors.map((color) => (
-                   <div key={color} className="flex items-center">
+                   <motion.div
+                      key={color}
+                      className="flex items-center"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                   >
                       <RadioGroupItem value={color} id={`color-${color}`} className="peer sr-only" />
                       <Label
                          htmlFor={`color-${color}`}
-                         className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-3 px-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground [&:has([data-state=checked])]:border-primary transition-all duration-200 cursor-pointer transform hover:scale-105 active:scale-95" // Enhanced styling and transitions
+                         className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-3 px-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground [&:has([data-state=checked])]:border-primary transition-all duration-200 cursor-pointer"
                          // Example: Add color swatch (needs mapping color names to hex/styles)
                          // style={{ backgroundColor: colorMap[color] || '#ccc' }}
                       >
                         {color}
                       </Label>
-                    </div>
+                    </motion.div>
                  ))}
                 </RadioGroup>
             </div>
@@ -285,7 +295,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
           {/* Add to Cart Button */}
           <Button
             size="lg"
-            className="w-full md:w-auto btn-animated btn-animated-accent mt-4" // Added margin-top
+            className="w-full md:w-auto btn-animated btn-animated-accent mt-4 pulsating-glow" // Added pulsing glow
             onClick={handleAddToCart}
             disabled={isAddingToCart} // Disable button while adding
           >
@@ -299,12 +309,17 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
                 </>
             )}
           </Button>
-        </div>
+        </motion.div>
       </div>
 
        {/* Related Products Section */}
        {relatedProducts && relatedProducts.length > 0 && (
-         <section className="mt-16 animate-fade-in" style={{ animationDelay: '0.2s' }}> {/* Added staggered animation */}
+         <motion.section
+             className="mt-16"
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+         >
            <h2 className="text-2xl md:text-3xl font-bold mb-6">You Might Also Like</h2>
             <Carousel
               opts={{
@@ -316,16 +331,21 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
               <CarouselContent className="-ml-4">
                 {relatedProducts.map((relatedProduct, index) => (
                   <CarouselItem key={relatedProduct.id} className="pl-4 md:basis-1/2 lg:basis-1/4">
-                     <div className="p-1 animate-fade-in" style={{ animationDelay: `${0.3 + index * 0.1}s` }}> {/* Staggered animation */}
+                     <motion.div
+                         className="p-1"
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ duration: 0.4, delay: 0.3 + index * 0.1, ease: "easeOut" }}
+                      >
                         <ProductCard product={relatedProduct} />
-                      </div>
+                      </motion.div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 hidden lg:flex btn-animated bg-background/80 hover:bg-background" /> {/* Adjusted position and style */}
-              <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 hidden lg:flex btn-animated bg-background/80 hover:bg-background" /> {/* Adjusted position and style */}
+              <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 hidden lg:flex btn-animated bg-background/80 hover:bg-background opacity-70 hover:opacity-100 transition-opacity" />
+              <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 hidden lg:flex btn-animated bg-background/80 hover:bg-background opacity-70 hover:opacity-100 transition-opacity" />
             </Carousel>
-         </section>
+         </motion.section>
        )}
     </div>
   );
