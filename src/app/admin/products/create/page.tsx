@@ -20,7 +20,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, PlusCircle } from 'lucide-react'; // Import icons
+import { ArrowLeft, Loader2, PlusCircle, Upload } from 'lucide-react'; // Added Upload icon
 import { motion } from 'framer-motion'; // Import motion
 
 // Schema for product creation validation
@@ -28,8 +28,9 @@ const productSchema = z.object({
   name: z.string().min(1, { message: "Product name is required." }),
   category: z.string().min(1, { message: "Category is required." }),
   price: z.coerce.number().min(0.01, { message: "Price must be positive." }), // Coerce to number
-  stock: z.coerce.number().int().min(0, { message: "Stock must be 0 or more." }), // Coerce to integer number
+  stock: z.coerce.number().int().min(0, { message: "Stock (Quantity) must be 0 or more." }), // Renamed label in UI, kept 'stock' internally
   description: z.string().optional(), // Description is optional
+  // images: z.any().optional(), // Placeholder for image upload logic
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -148,7 +149,7 @@ export default function CreateProductPage() {
                   )}
                 />
 
-                {/* Stock */}
+                {/* Stock (Quantity) */}
                  <FormField
                   control={form.control}
                   name="stock"
@@ -162,7 +163,7 @@ export default function CreateProductPage() {
                             {...field}
                            />
                        </FormControl>
-                      <FormLabel>Stock Quantity</FormLabel>
+                      <FormLabel>Stock Quantity</FormLabel> {/* Updated Label */}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -188,12 +189,22 @@ export default function CreateProductPage() {
                 )}
               />
 
-              {/* TODO: Add Image Upload Component Here */}
-               {/* <div className="space-y-1">
-                 <Label>Product Images</Label>
-                 <Input type="file" multiple />
-                 <p className="text-xs text-muted-foreground">Upload one or more images.</p>
-               </div> */}
+               {/* Image Upload Placeholder */}
+               <div className="space-y-1">
+                 <Label htmlFor="product-images">Product Images</Label>
+                  <div className="flex items-center justify-center w-full">
+                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-border border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 mb-3 text-muted-foreground" />
+                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                            <p className="text-xs text-muted-foreground">SVG, PNG, JPG or GIF (Recommended: 800x1000px)</p>
+                        </div>
+                        <Input id="dropzone-file" type="file" className="hidden" multiple accept="image/*" />
+                         {/* TODO: Add image preview and handling logic */}
+                    </label>
+                  </div>
+                 <p className="text-xs text-muted-foreground pt-1">Upload one or more images for the product.</p>
+               </div>
 
 
             </CardContent>

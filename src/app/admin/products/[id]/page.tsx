@@ -1,7 +1,7 @@
 // src/app/admin/products/[id]/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react'; // Added 'use'
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -21,22 +21,25 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Save, Archive, Trash2, Eye } from 'lucide-react'; // Import icons
+import { ArrowLeft, Loader2, Save, Archive, Trash2, Eye, Upload } from 'lucide-react'; // Import icons
 import { mockProducts, Product } from '@/lib/admin-mock-data'; // Import mock data
 import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"; // Import Alert Dialog
 import { FormattedDate } from '@/components/ui/formatted-date'; // Import FormattedDate
 import { motion } from 'framer-motion'; // Import motion
 import { AnimatedSpinner } from '@/components/ui/animated-spinner';
+import Image from 'next/image'; // Import Image for displaying current images
+import { Separator } from '@/components/ui/separator';
 
 // Schema for product editing validation
 const productSchema = z.object({
   name: z.string().min(1, { message: "Product name is required." }),
   category: z.string().min(1, { message: "Category is required." }),
   price: z.coerce.number().min(0.01, { message: "Price must be positive." }),
-  stock: z.coerce.number().int().min(0, { message: "Stock must be 0 or more." }),
+  stock: z.coerce.number().int().min(0, { message: "Stock (Quantity) must be 0 or more." }), // Renamed label in UI
   description: z.string().optional(),
   status: z.enum(['active', 'archived']),
+  // images: z.any().optional(), // Placeholder for image upload/management
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -46,11 +49,15 @@ interface ProductEditPageProps {
 }
 
 export default function EditProductPage({ params: paramsPromise }: ProductEditPageProps) {
+  const params = use(paramsPromise); // Use React.use to unwrap the promise
+  const productId = params.id;
+
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [mockImageUrls, setMockImageUrls] = useState<string[]>([]); // State for mock images
 
   const { toast } = useToast();
   const router = useRouter();
@@ -71,8 +78,7 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
   useEffect(() => {
     const fetchProduct = async () => {
       setIsLoading(true);
-      const params = await paramsPromise; // Await the promise to get productId
-      const productId = params.id;
+      // `params` is already unwrapped by `use(paramsPromise)`
 
       // Simulate fetching data
       const foundProduct = mockProducts.find(p => p.id === productId);
@@ -86,6 +92,11 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
           description: '', // Assuming description is not in mock Product type yet
           status: foundProduct.status,
         });
+        // Simulate fetching/setting image URLs for display
+        setMockImageUrls([
+            `https://picsum.photos/seed/${foundProduct.id}a/200/200`,
+            `https://picsum.photos/seed/${foundProduct.id}b/200/200`,
+        ]);
       } else {
         toast({ title: "Error", description: "Product not found.", variant: "destructive" });
         router.push('/admin/products'); // Redirect if not found
@@ -94,7 +105,7 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
     };
 
     fetchProduct();
-  }, [paramsPromise, form, toast, router]);
+  }, [productId, form, toast, router]); // Depend on unwrapped productId
 
   const onSubmit: SubmitHandler<ProductFormValues> = async (data) => {
     setIsSubmitting(true);
@@ -185,6 +196,16 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
                <Skeleton className="h-10 w-full" />
              </div>
              <Skeleton className="h-24 w-full" />
+              {/* Image Management Skeleton */}
+             <Separator />
+             <Skeleton className="h-6 w-1/4 mb-2" />
+             <div className="grid grid-cols-3 gap-4">
+                <Skeleton className="h-24 w-full rounded-lg"/>
+                <Skeleton className="h-24 w-full rounded-lg"/>
+                <Skeleton className="h-24 w-full rounded-lg"/>
+             </div>
+             <Skeleton className="h-32 w-full border-dashed border-2 rounded-lg" />
+
            </CardContent>
            <CardFooter className="border-t px-6 py-4 flex justify-between">
              <Skeleton className="h-10 w-24" />
@@ -291,7 +312,7 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
                   )}
                 />
 
-                {/* Stock */}
+                {/* Stock (Quantity) */}
                  <FormField
                   control={form.control}
                   name="stock"
@@ -305,7 +326,7 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
                             {...field}
                            />
                        </FormControl>
-                      <FormLabel>Stock Quantity</FormLabel>
+                      <FormLabel>Stock Quantity</FormLabel> {/* Updated Label */}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -330,67 +351,139 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
                   </FormItem>
                 )}
               />
+
+               {/* Image Management Placeholder */}
+               <Separator />
+               <div className="space-y-4">
+                  <Label className="text-lg font-semibold">Product Images</Label>
+                  {/* Display Current Images (Mock) */}
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                      {mockImageUrls.map((url, index) => (
+                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden border group">
+                           <Image
+                            src={url}
+                            alt={`Product Image ${index + 1}`}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                           />
+                           <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity z-10 btn-animated"
+                            onClick={() => console.log(`Remove image ${index}`)} // Replace with actual logic
+                            aria-label="Remove image"
+                           >
+                                <Trash2 className="h-3 w-3" />
+                           </Button>
+                        </div>
+                      ))}
+                  </div>
+
+                  {/* Upload New Image Placeholder */}
+                  <div className="flex items-center justify-center w-full">
+                    <label htmlFor="dropzone-file-edit" className="flex flex-col items-center justify-center w-full h-32 border-2 border-border border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 mb-3 text-muted-foreground" />
+                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Upload new images</span> or drag and drop</p>
+                            <p className="text-xs text-muted-foreground">Add more images for the product</p>
+                        </div>
+                        <Input id="dropzone-file-edit" type="file" className="hidden" multiple accept="image/*" />
+                         {/* TODO: Add image preview and handling logic */}
+                    </label>
+                  </div>
+               </div>
+
+
             </CardContent>
-          </Card>
+            <CardFooter className="border-t px-6 py-4 flex justify-between items-center"> {/* Adjusted alignment */}
+               {/* Status Indicator */}
+               <div className="flex items-center gap-2">
+                  <Label htmlFor="product-status" className="text-sm font-medium">Status:</Label>
+                   <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                             <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                disabled={isArchiving || isDeleting}
+                              >
+                              <SelectTrigger id="product-status" className="h-9 w-[120px]">
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="archived">Archived</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Combined Archive/Activate button */}
+                     <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={isArchiving || isDeleting}
+                        onClick={handleArchiveToggle}
+                        className="btn-animated ml-2"
+                        >
+                        <Archive className="mr-2 h-4 w-4" /> {product.status === 'active' ? 'Archive' : 'Activate'}
+                    </Button>
+               </div>
 
-          <CardFooter className="px-6 py-4 flex justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isArchiving || isDeleting}
-              onClick={handleArchiveToggle}
-              className="btn-animated"
-            >
-              <Archive className="mr-2 h-4 w-4" /> {product.status === 'active' ? 'Archive' : 'Activate'}
-            </Button>
 
-            <div className="flex gap-4">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    disabled={isDeleting}
-                    onClick={() => setIsDeleting(true)}
-                    className="btn-animated"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="btn-animated">Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDelete}
-                      className="btn-animated btn-destructive"
+              <div className="flex gap-4">
+                 {/* Delete Button */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      type="button" // Ensure it doesn't submit the form
+                      variant="destructive"
+                      size="sm"
+                      disabled={isDeleting || isSubmitting || isArchiving} // Disable during actions
+                      className="btn-animated"
+                      // onClick={() => setIsDeleting(true)} // Triggering via AlertDialogTrigger now
                     >
-                      Delete Product
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                       {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />} Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the product "{product.name}".
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isDeleting} className="btn-animated">Cancel</AlertDialogCancel>
+                       <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90 btn-animated">
+                          {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Delete Product
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
 
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn-animated"
-              >
-                {isSubmitting ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-4 w-4" />
-                )}
-                Save Changes
-              </Button>
-            </div>
-          </CardFooter>
+                 {/* Save Changes Button */}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || isDeleting || isArchiving} // Disable during actions
+                  className="btn-animated"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  Save Changes
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
         </form>
       </Form>
     </motion.div>
