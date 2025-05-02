@@ -60,7 +60,6 @@ interface ProductDetailsPageProps {
 export default function ProductDetailsPage({ params: paramsPromise }: ProductDetailsPageProps) { // Rename params to paramsPromise
     // Use React.use to unwrap the params promise
     const params = use(paramsPromise);
-    const productId = params.id; // Access id after unwrapping
 
     // Fetch data using useEffect and useState to handle client-side loading state
     const [product, setProduct] = useState<Awaited<ReturnType<typeof getProductDetails>> | null>(null);
@@ -76,15 +75,17 @@ export default function ProductDetailsPage({ params: paramsPromise }: ProductDet
             setIsLoading(true);
             try {
                 // Use the unwrapped productId
-                const [productData, relatedData] = await Promise.all([
-                    getProductDetails(productId),
-                    getRelatedProducts(productId)
-                ]);
-                setProduct(productData);
-                setRelatedProducts(relatedData);
-                // Set default selections once product data is loaded
-                setSelectedSize(productData?.sizes?.[0]);
-                setSelectedColor(productData?.colors?.[0]);
+                if (params?.id) {
+                  const [productData, relatedData] = await Promise.all([
+                      getProductDetails(params.id),
+                      getRelatedProducts(params.id)
+                  ]);
+                  setProduct(productData);
+                  setRelatedProducts(relatedData);
+                  // Set default selections once product data is loaded
+                  setSelectedSize(productData?.sizes?.[0]);
+                  setSelectedColor(productData?.colors?.[0]);
+                }
             } catch (error) {
                 console.error("Failed to fetch product data:", error);
                 toast({ title: "Error", description: "Could not load product details.", variant: "destructive" });
@@ -94,10 +95,10 @@ export default function ProductDetailsPage({ params: paramsPromise }: ProductDet
             }
         };
         // Check if productId exists before fetching
-        if (productId) {
-            fetchData();
-        }
-    }, [productId, toast]); // Use productId in the dependency array
+
+        fetchData();
+
+    }, [params?.id, toast]); // Use params.id in the dependency array, now correctly accessed
 
 
    const handleAddToCart = async () => { // Make async
@@ -350,3 +351,4 @@ export default function ProductDetailsPage({ params: paramsPromise }: ProductDet
     </div>
   );
 }
+
