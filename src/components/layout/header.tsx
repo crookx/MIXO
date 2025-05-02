@@ -81,8 +81,11 @@ const Header = () => {
                       href="/cart"
                       className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                     >
-                      <ShoppingCart className="h-5 w-5" />
-                      Cart
+                      {/* Wrap icon and text in a single span */}
+                      <span>
+                        <ShoppingCart className="h-5 w-5 inline-block mr-3" />
+                        Cart
+                      </span>
                     </Link>
                  </SheetClose>
                  <SheetClose asChild>
@@ -90,8 +93,11 @@ const Header = () => {
                       href="/auth"
                       className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                     >
-                      <User className="h-5 w-5" />
-                      Account
+                      {/* Wrap icon and text in a single span */}
+                      <span>
+                        <User className="h-5 w-5 inline-block mr-3" />
+                        Account
+                      </span>
                     </Link>
                   </SheetClose>
               </nav>
