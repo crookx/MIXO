@@ -11,7 +11,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast"; // Import useToast
 import { ShoppingCart, ZoomIn, Loader2 } from 'lucide-react'; // Added Loader2
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"; // For zoom
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"; // For zoom, Added DialogTitle
 import { Skeleton } from "@/components/ui/skeleton"; // Added Skeleton
 import { motion } from "framer-motion"; // Added framer-motion
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'; // Added AnimatedSpinner
@@ -83,8 +83,10 @@ export default function ProductDetailsPage({ params: paramsPromise }: ProductDet
                   setProduct(productData);
                   setRelatedProducts(relatedData);
                   // Set default selections once product data is loaded
-                  setSelectedSize(productData?.sizes?.[0]);
-                  setSelectedColor(productData?.colors?.[0]);
+                  if (productData) {
+                     setSelectedSize(productData?.sizes?.[0]);
+                     setSelectedColor(productData?.colors?.[0]);
+                  }
                 }
             } catch (error) {
                 console.error("Failed to fetch product data:", error);
@@ -202,6 +204,7 @@ export default function ProductDetailsPage({ params: paramsPromise }: ProductDet
                         </Card>
                       </DialogTrigger>
                       <DialogContent className="max-w-3xl h-[80vh] p-0 border-none bg-transparent shadow-none">
+                          <DialogTitle className="sr-only">{`${product.name} - view ${index + 1} zoomed`}</DialogTitle> {/* Added for accessibility */}
                          <Image
                             src={imgSrc}
                             alt={`${product.name} - view ${index + 1} zoomed`}
@@ -351,4 +354,3 @@ export default function ProductDetailsPage({ params: paramsPromise }: ProductDet
     </div>
   );
 }
-
