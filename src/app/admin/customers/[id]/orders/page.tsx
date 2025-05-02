@@ -58,11 +58,11 @@ const getStatusBadgeClass = (status: OrderStatus): string => {
 };
 
 interface CustomerOrdersPageProps {
-    params: Promise<{ id: string }>;
+    params: { id: string }; // Adjusted for use(params)
 }
 
-export default function CustomerOrdersPage({ params: paramsPromise }: CustomerOrdersPageProps) {
-  const params = use(paramsPromise);
+export default function CustomerOrdersPage({ params }: CustomerOrdersPageProps) { // Adjusted for use(params)
+  // const params = use(paramsPromise); // No longer needed with direct params access
   const customerId = params.id;
 
   const router = useRouter();
@@ -311,7 +311,7 @@ export default function CustomerOrdersPage({ params: paramsPromise }: CustomerOr
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                </motion.tr>
+                </motion.tr> // Ensure no whitespace before/after TableCells
               ))
             ) : (
               <TableRow>

@@ -1,7 +1,7 @@
 // src/app/admin/products/[id]/page.tsx
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -46,16 +46,14 @@ interface ProductEditPageProps {
 }
 
 export default function EditProductPage({ params: paramsPromise }: ProductEditPageProps) {
-  const params = use(paramsPromise); // Unwrap promise
-  const productId = params.id;
-
-  const { toast } = useToast();
-  const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+
+  const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -69,15 +67,17 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
     },
   });
 
-  // Fetch mock product data on mount
+  // Fetch product data on mount
   useEffect(() => {
-    setIsLoading(true);
-    // Simulate fetching data
-    setTimeout(() => {
+    const fetchProduct = async () => {
+      setIsLoading(true);
+      const params = await paramsPromise; // Await the promise to get productId
+      const productId = params.id;
+
+      // Simulate fetching data
       const foundProduct = mockProducts.find(p => p.id === productId);
       if (foundProduct) {
         setProduct(foundProduct);
-        // Reset form with fetched data
         form.reset({
           name: foundProduct.name,
           category: foundProduct.category,
@@ -88,20 +88,21 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
         });
       } else {
         toast({ title: "Error", description: "Product not found.", variant: "destructive" });
-        // router.push('/admin/products'); // Redirect if not found
+        router.push('/admin/products'); // Redirect if not found
       }
       setIsLoading(false);
-    }, 500); // Simulate network delay
-  }, [productId, form, toast, router]);
+    };
+
+    fetchProduct();
+  }, [paramsPromise, form, toast, router]);
 
   const onSubmit: SubmitHandler<ProductFormValues> = async (data) => {
     setIsSubmitting(true);
-    console.log('Updating Product:', productId, data);
+    console.log('Updating Product:', product?.id, data);
     // Simulate API call
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
       // ** TODO: Implement actual product update logic here **
-      // Example: await updateProductInDatabase(productId, data);
 
       // Update local state for demo purposes (won't persist)
       if (product) {
@@ -125,48 +126,44 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
     }
   };
 
-   const handleArchiveToggle = async () => {
-      if (!product) return;
-      setIsArchiving(true);
-      const newStatus = product.status === 'active' ? 'archived' : 'active';
-      console.log(`${newStatus === 'archived' ? 'Archiving' : 'Activating'} product ${productId}`);
-       // Simulate API call
-      try {
-          await new Promise(resolve => setTimeout(resolve, 700));
-          // ** TODO: Implement archive/activate logic here **
-          setProduct({ ...product, status: newStatus });
-          form.setValue('status', newStatus); // Update form state as well
-          toast({
-              title: `Product ${newStatus === 'archived' ? 'Archived' : 'Activated'}`,
-              description: `${product.name} is now ${newStatus}.`,
-          });
-      } catch (error: any) {
-          toast({ title: "Action Failed", description: `Could not ${newStatus === 'archived' ? 'archive' : 'activate'} product.`, variant: "destructive" });
-      } finally {
-          setIsArchiving(false);
-      }
-   };
+  const handleArchiveToggle = async () => {
+    if (!product) return;
+    setIsArchiving(true);
+    const newStatus = product.status === 'active' ? 'archived' : 'active';
+    console.log(`${newStatus === 'archived' ? 'Archiving' : 'Activating'} product ${product.id}`);
+    // Simulate API call
+    try {
+      await new Promise(resolve => setTimeout(resolve, 700));
+      setProduct({ ...product, status: newStatus });
+      form.setValue('status', newStatus); // Update form state as well
+      toast({
+        title: `Product ${newStatus === 'archived' ? 'Archived' : 'Activated'}`,
+        description: `${product.name} is now ${newStatus}.`,
+      });
+    } catch (error: any) {
+      toast({ title: "Action Failed", description: `Could not ${newStatus === 'archived' ? 'archive' : 'activate'} product.`, variant: "destructive" });
+    } finally {
+      setIsArchiving(false);
+    }
+  };
 
-   const handleDelete = async () => {
-        if (!product) return;
-        setIsDeleting(true);
-        console.log(`Deleting product ${productId}`);
-        // Simulate API call
-        try {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-             // ** TODO: Implement delete logic here **
-            toast({
-                title: "Product Deleted",
-                description: `${product.name} has been permanently deleted.`,
-                variant: "destructive"
-            });
-             router.push('/admin/products'); // Redirect after delete
-        } catch (error: any) {
-            toast({ title: "Delete Failed", description: `Could not delete product.`, variant: "destructive" });
-            setIsDeleting(false); // Stop loading on error
-        }
-        // No finally setIsDeleting(false) needed if redirecting on success
-   };
+  const handleDelete = async () => {
+    if (!product) return;
+    setIsDeleting(true);
+    console.log(`Deleting product ${product.id}`);
+    // Simulate API call
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast({
+        title: "Product Deleted",
+        description: `${product.name} has been permanently deleted.`,
+        variant: "destructive"
+      });
+      router.push('/admin/products'); // Redirect after delete
+    } catch (error: any) {
+      toast({ title: "Delete Failed", description: `Could not delete product.`, variant: "destructive" });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -266,7 +263,7 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
                 name="category"
                 render={({ field }) => (
                   <FormItem className="floating-label">
-                    <FormControl><Input placeholder=" " {...field} /></FormControl> {/* Consider using a Select component here */}
+                    <FormControl><Input placeholder=" " {...field} /></FormControl>
                     <FormLabel>Category</FormLabel>
                     <FormMessage />
                   </FormItem>
@@ -333,88 +330,67 @@ export default function EditProductPage({ params: paramsPromise }: ProductEditPa
                   </FormItem>
                 )}
               />
-
-               {/* Status */}
-               <FormField
-                 control={form.control}
-                 name="status"
-                 render={({ field }) => (
-                   <FormItem>
-                     <FormLabel>Status</FormLabel>
-                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                       <FormControl>
-                         <SelectTrigger className="btn-animated">
-                           <SelectValue placeholder="Select status" />
-                         </SelectTrigger>
-                       </FormControl>
-                       <SelectContent>
-                         <SelectItem value="active">Active</SelectItem>
-                         <SelectItem value="archived">Archived</SelectItem>
-                       </SelectContent>
-                     </Select>
-                     <FormMessage />
-                   </FormItem>
-                 )}
-               />
-
-
-              {/* TODO: Add Image Management Component Here */}
-               {/* <div className="space-y-1">
-                 <Label>Product Images</Label>
-                 {/* Display existing images with delete options */}
-                 {/* <Input type="file" multiple /> */}
-               {/*</div> */}
-
             </CardContent>
-            <CardFooter className="border-t px-6 py-4 flex flex-col sm:flex-row justify-between gap-3">
-               {/* Delete Button with Confirmation */}
+          </Card>
+
+          <CardFooter className="px-6 py-4 flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isArchiving || isDeleting}
+              onClick={handleArchiveToggle}
+              className="btn-animated"
+            >
+              <Archive className="mr-2 h-4 w-4" /> {product.status === 'active' ? 'Archive' : 'Activate'}
+            </Button>
+
+            <div className="flex gap-4">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                   <Button variant="destructive" className="w-full sm:w-auto btn-animated" disabled={isDeleting || isSubmitting || isArchiving}>
-                      {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />} Delete Product
-                   </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={isDeleting}
+                    onClick={() => setIsDeleting(true)}
+                    className="btn-animated"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the product "{product.name}".
+                      This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeleting} className="btn-animated">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90 btn-animated">
-                        {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Delete
+                    <AlertDialogCancel className="btn-animated">Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      className="btn-animated btn-destructive"
+                    >
+                      Delete Product
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
 
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                 <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleArchiveToggle}
-                    className="w-full sm:w-auto btn-animated"
-                    disabled={isArchiving || isSubmitting || isDeleting}
-                 >
-                    {isArchiving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Archive className="mr-2 h-4 w-4" />}
-                    {product.status === 'active' ? 'Archive' : 'Activate'} Product
-                 </Button>
-                 <Button type="submit" className="w-full sm:w-auto btn-animated btn-animated-accent" disabled={isSubmitting || isDeleting || isArchiving}>
-                   {isSubmitting ? (
-                     <>
-                       <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-                     </>
-                   ) : (
-                     <>
-                       <Save className="mr-2 h-4 w-4" /> Save Changes
-                     </>
-                   )}
-                 </Button>
-              </div>
-            </CardFooter>
-          </Card>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-animated"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save Changes
+              </Button>
+            </div>
+          </CardFooter>
         </form>
       </Form>
     </motion.div>

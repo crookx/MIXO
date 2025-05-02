@@ -30,6 +30,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion'; // Import motion
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'; // Import AnimatedSpinner
+import Link from 'next/link'; // Import Link
 
 
 const ITEMS_PER_PAGE = 10;
@@ -221,8 +222,12 @@ export default function AdminOrdersPage() {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
                 >
-                  <TableCell className="font-medium">{order.id}</TableCell>
-                  <TableCell>{order.customerName}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/admin/orders/${order.id}`} className="hover:underline hover:text-accent">{order.id}</Link>
+                  </TableCell>
+                  <TableCell>
+                    <Link href={`/admin/customers/${mockCustomers.find(c => c.email === order.customerEmail)?.id}`} className="hover:underline hover:text-accent">{order.customerName}</Link>
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{order.customerEmail}</TableCell>
                   <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
                   <TableCell>
@@ -230,7 +235,7 @@ export default function AdminOrdersPage() {
                         {order.status}
                     </Badge>
                   </TableCell>
-                  <TableCell><FormattedDate date={order.createdAt} /></TableCell> {/* Use FormattedDate */}
+                  <TableCell><FormattedDate date={order.createdAt} /></TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -242,7 +247,9 @@ export default function AdminOrdersPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href={`/admin/orders/${order.id}`}>View Details</Link>
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                          <DropdownMenuLabel>Change Status</DropdownMenuLabel>
                          {allStatuses
@@ -260,7 +267,7 @@ export default function AdminOrdersPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                </motion.tr> // End motion.tr
+                </motion.tr> // End motion.tr - Ensure no whitespace before/after TableCells
               ))
             ) : (
               <TableRow>

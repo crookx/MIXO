@@ -21,12 +21,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Search } from 'lucide-react';
+import { MoreHorizontal, Search, PlusCircle } from 'lucide-react'; // Added PlusCircle
 // import { format } from 'date-fns'; // No longer needed directly here
 import { FormattedDate } from '@/components/ui/formatted-date'; // Import FormattedDate
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion'; // Import motion
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'; // Import AnimatedSpinner
+import Link from 'next/link'; // Import Link
 
 
 const ITEMS_PER_PAGE = 10;
@@ -88,7 +89,10 @@ export default function AdminCustomersPage() {
     >
       <div className="flex justify-between items-center">
         <h1 className="text-2xl md:text-3xl font-bold">Customers</h1>
-        {/* Optional: Add Customer button? */}
+         {/* Optional: Add Customer button */}
+         <Button className="btn-animated btn-animated-accent">
+             <PlusCircle className="mr-2 h-4 w-4" /> Add Customer
+        </Button>
       </div>
 
       {/* Search and Filters */}
@@ -143,11 +147,13 @@ export default function AdminCustomersPage() {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
                 >
-                  <TableCell className="font-medium">{customer.name}</TableCell>
+                  <TableCell className="font-medium">
+                     <Link href={`/admin/customers/${customer.id}`} className="hover:underline hover:text-accent">{customer.name}</Link>
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{customer.email}</TableCell>
                   <TableCell className="text-right">{customer.totalOrders}</TableCell>
                   <TableCell className="text-right">${customer.totalSpent.toFixed(2)}</TableCell>
-                  <TableCell><FormattedDate date={customer.joinedAt} /></TableCell> {/* Use FormattedDate */}
+                  <TableCell><FormattedDate date={customer.joinedAt} /></TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -159,8 +165,12 @@ export default function AdminCustomersPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Customer Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled={isLoading}>View Details</DropdownMenuItem>
-                        <DropdownMenuItem disabled={isLoading}>View Orders</DropdownMenuItem>
+                         <DropdownMenuItem disabled={isLoading} asChild>
+                            <Link href={`/admin/customers/${customer.id}`}>View Details</Link>
+                         </DropdownMenuItem>
+                         <DropdownMenuItem disabled={isLoading} asChild>
+                            <Link href={`/admin/customers/${customer.id}/orders`}>View Orders</Link>
+                        </DropdownMenuItem>
                          {/* Use with caution */}
                          <DropdownMenuItem
                             className="text-destructive"
@@ -172,7 +182,7 @@ export default function AdminCustomersPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                </motion.tr> // End motion.tr
+                </motion.tr> // End motion.tr - Ensure no whitespace before/after TableCells
               ))
             ) : (
               <TableRow>

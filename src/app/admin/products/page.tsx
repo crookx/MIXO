@@ -28,6 +28,7 @@ import { FormattedDate } from '@/components/ui/formatted-date'; // Import Format
 import { Skeleton } from '@/components/ui/skeleton'; // For loading state
 import { motion } from 'framer-motion'; // Import motion
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'; // Import AnimatedSpinner
+import Link from 'next/link'; // Import Link
 
 const ITEMS_PER_PAGE = 10;
 
@@ -107,8 +108,10 @@ export default function AdminProductsPage() {
     >
       <div className="flex justify-between items-center">
         <h1 className="text-2xl md:text-3xl font-bold">Products</h1>
-        <Button className="btn-animated btn-animated-accent">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Product
+        <Button asChild className="btn-animated btn-animated-accent">
+          <Link href="/admin/products/create"> {/* Link to create page */}
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Product
+          </Link>
         </Button>
       </div>
 
@@ -165,7 +168,9 @@ export default function AdminProductsPage() {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="hover:bg-muted/50 transition-colors" // Keep TableRow styling classes
                 >
-                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/admin/products/${product.id}`} className="hover:underline hover:text-accent">{product.name}</Link>
+                  </TableCell>
                   <TableCell>{product.category}</TableCell>
                   <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
                   <TableCell className={`text-right ${product.stock === 0 ? 'text-destructive' : ''}`}>
@@ -176,7 +181,7 @@ export default function AdminProductsPage() {
                        {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
                     </Badge>
                   </TableCell>
-                  <TableCell><FormattedDate date={product.createdAt} /></TableCell> {/* Use FormattedDate */}
+                  <TableCell><FormattedDate date={product.createdAt} /></TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -188,7 +193,9 @@ export default function AdminProductsPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled={isLoading}>Edit</DropdownMenuItem>
+                         <DropdownMenuItem disabled={isLoading} asChild>
+                             <Link href={`/admin/products/${product.id}`}>Edit</Link>
+                        </DropdownMenuItem>
                         {product.status === 'active' ? (
                            <DropdownMenuItem onClick={() => handleArchive(product.id)} disabled={isLoading}>Archive</DropdownMenuItem>
                         ) : (
@@ -198,7 +205,7 @@ export default function AdminProductsPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                </motion.tr> // End motion.tr
+                </motion.tr> // End motion.tr - Ensure no whitespace before/after TableCells
               ))
             ) : (
               <TableRow>
