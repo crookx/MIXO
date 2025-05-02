@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image'; // Import Image component
 import { ShoppingCart, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator'; // Ensure Separator is imported
+import { Separator } from '@/components/ui/separator';
 
 const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -34,21 +35,33 @@ const Header = () => {
   const navItems = [
     { href: '/', label: 'Home' },
     { href: '/products', label: 'Products' },
-    { href: '/about', label: 'About' }, // Added About
-    { href: '/support', label: 'Support' }, // Added Support
-    // Add more categories as needed
+    { href: '/about', label: 'About' },
+    { href: '/support', label: 'Support' },
   ];
 
   return (
     <header
       className={cn(
         `sticky top-0 z-50 w-full border-b transition-all duration-300 ease-in-out`,
-        isSticky ? 'bg-background/90 shadow-md backdrop-filter backdrop-blur-lg bg-opacity-80' : 'bg-background' // Enhanced sticky effect with blur
+        isSticky ? 'bg-background/90 shadow-md backdrop-filter backdrop-blur-lg bg-opacity-80' : 'bg-background'
       )}
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href="/" className="text-2xl font-bold text-primary mr-6 transition-transform duration-300 hover:scale-105">
-          ChronoThreads
+        <Link href="/" className="flex items-center gap-2 mr-6 transition-transform duration-300 hover:scale-105">
+          {/* Logo Image */}
+          <Image
+            src="https://picsum.photos/seed/logo/120/40" // Placeholder logo URL
+            alt="ChronoThreads Logo"
+            width={120} // Adjust width as needed
+            height={40} // Adjust height as needed
+            className="h-8 w-auto" // Maintain aspect ratio
+            data-ai-hint="futuristic tech logo"
+            priority // Load logo early
+          />
+          {/* Optional: Keep text if needed */}
+          {/* <span className="text-2xl font-bold text-primary hidden sm:inline-block">
+            ChronoThreads
+          </span> */}
         </Link>
 
         {isMobile ? (
@@ -60,8 +73,18 @@ const Header = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[280px] bg-background p-6">
-              <Link href="/" className="text-2xl font-bold text-primary mb-8 block" onClick={() => setIsSheetOpen(false)}>
-                ChronoThreads
+              <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-primary mb-8" onClick={() => setIsSheetOpen(false)}>
+                 <Image
+                    src="https://picsum.photos/seed/logo/100/30" // Placeholder logo URL
+                    alt="ChronoThreads Logo"
+                    width={100}
+                    height={30}
+                    className="h-7 w-auto"
+                    data-ai-hint="futuristic tech logo"
+                    priority
+                  />
+                  {/* Optional Text for Mobile Menu */}
+                  {/* ChronoThreads */}
               </Link>
               <nav className="grid gap-4 text-lg font-medium">
                 {navItems.map((item) => (
@@ -69,7 +92,6 @@ const Header = () => {
                     <Link
                       href={item.href}
                       className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                      onClick={() => setIsSheetOpen(false)} // Ensure menu closes on click
                     >
                       {item.label}
                     </Link>
