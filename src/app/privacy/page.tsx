@@ -1,9 +1,16 @@
+import { FormattedDate } from '@/components/ui/formatted-date'; // Import FormattedDate
+
 export default function PrivacyPage() {
+  // Get the current date on the server side (this is fine as it's consistent per render)
+  const currentDate = new Date();
+
   return (
     <div className="container mx-auto px-4 md:px-6 py-12">
       <h1 className="text-3xl md:text-4xl font-bold text-center mb-8">Privacy Policy</h1>
       <div className="prose prose-lg max-w-4xl mx-auto text-muted-foreground"> {/* Using Tailwind typography plugin for basic styling */}
-        <p className="text-sm">Last Updated: {new Date().toLocaleDateString()}</p>
+        <p className="text-sm">
+          Last Updated: <FormattedDate date={currentDate} formatString="PP" /> {/* Use FormattedDate */}
+        </p>
 
         <h2>1. Introduction</h2>
         <p>

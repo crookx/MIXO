@@ -22,7 +22,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Search } from 'lucide-react';
-import { format } from 'date-fns';
+// import { format } from 'date-fns'; // No longer needed directly here
+import { FormattedDate } from '@/components/ui/formatted-date'; // Import FormattedDate
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion'; // Import motion
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'; // Import AnimatedSpinner
@@ -124,9 +125,8 @@ export default function AdminCustomersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-             {isLoading ? (
-               // Skeleton Loading Rows with Futuristic Spinner
-              <TableRow>
+             {isLoading && paginatedCustomers.length === 0 ? ( // Show spinner only if truly loading initial data
+               <TableRow>
                 <TableCell colSpan={6} className="h-60 text-center">
                   <div className="flex flex-col items-center justify-center gap-4">
                      <AnimatedSpinner className="text-accent" />
@@ -147,7 +147,7 @@ export default function AdminCustomersPage() {
                   <TableCell className="text-muted-foreground">{customer.email}</TableCell>
                   <TableCell className="text-right">{customer.totalOrders}</TableCell>
                   <TableCell className="text-right">${customer.totalSpent.toFixed(2)}</TableCell>
-                  <TableCell>{format(customer.joinedAt, 'PP')}</TableCell>
+                  <TableCell><FormattedDate date={customer.joinedAt} /></TableCell> {/* Use FormattedDate */}
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -159,8 +159,8 @@ export default function AdminCustomersPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Customer Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>View Orders</DropdownMenuItem>
+                        <DropdownMenuItem disabled={isLoading}>View Details</DropdownMenuItem>
+                        <DropdownMenuItem disabled={isLoading}>View Orders</DropdownMenuItem>
                          {/* Use with caution */}
                          <DropdownMenuItem
                             className="text-destructive"

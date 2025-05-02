@@ -24,7 +24,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Search, Filter } from 'lucide-react';
-import { format } from 'date-fns';
+// import { format } from 'date-fns'; // No longer needed directly here
+import { FormattedDate } from '@/components/ui/formatted-date'; // Import FormattedDate
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion'; // Import motion
@@ -202,8 +203,7 @@ export default function AdminOrdersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-             {isLoading ? ( // Show skeleton only if loading
-              // Skeleton Loading Rows with Futuristic Spinner
+             {isLoading && paginatedOrders.length === 0 ? ( // Show spinner only if truly loading initial data
               <TableRow>
                 <TableCell colSpan={7} className="h-60 text-center">
                   <div className="flex flex-col items-center justify-center gap-4">
@@ -230,7 +230,7 @@ export default function AdminOrdersPage() {
                         {order.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>{format(order.createdAt, 'PP')}</TableCell>
+                  <TableCell><FormattedDate date={order.createdAt} /></TableCell> {/* Use FormattedDate */}
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -252,6 +252,7 @@ export default function AdminOrdersPage() {
                                     key={newStatus}
                                     onClick={() => handleStatusChange(order.id, newStatus)}
                                     className="capitalize"
+                                    disabled={isLoading} // Disable while loading
                                 >
                                     Mark as {newStatus}
                                 </DropdownMenuItem>

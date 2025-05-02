@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, PlusCircle, Search } from 'lucide-react';
-import { format } from 'date-fns'; // For date formatting
+// import { format } from 'date-fns'; // No longer needed directly here
+import { FormattedDate } from '@/components/ui/formatted-date'; // Import FormattedDate
 import { Skeleton } from '@/components/ui/skeleton'; // For loading state
 import { motion } from 'framer-motion'; // Import motion
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'; // Import AnimatedSpinner
@@ -146,8 +147,7 @@ export default function AdminProductsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading ? (
-              // Skeleton Loading Rows with Futuristic Spinner
+            {isLoading && paginatedProducts.length === 0 ? ( // Show spinner only if truly loading initial data
               <TableRow>
                 <TableCell colSpan={7} className="h-60 text-center">
                   <div className="flex flex-col items-center justify-center gap-4">
@@ -176,11 +176,11 @@ export default function AdminProductsPage() {
                        {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
                     </Badge>
                   </TableCell>
-                  <TableCell>{format(product.createdAt, 'PP')}</TableCell> {/* Format date */}
+                  <TableCell><FormattedDate date={product.createdAt} /></TableCell> {/* Use FormattedDate */}
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isLoading}>
                           <MoreHorizontal className="h-4 w-4" />
                           <span className="sr-only">Actions</span>
                         </Button>
@@ -188,13 +188,13 @@ export default function AdminProductsPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem disabled={isLoading}>Edit</DropdownMenuItem>
                         {product.status === 'active' ? (
-                           <DropdownMenuItem onClick={() => handleArchive(product.id)}>Archive</DropdownMenuItem>
+                           <DropdownMenuItem onClick={() => handleArchive(product.id)} disabled={isLoading}>Archive</DropdownMenuItem>
                         ) : (
-                           <DropdownMenuItem onClick={() => handleActivate(product.id)}>Activate</DropdownMenuItem>
+                           <DropdownMenuItem onClick={() => handleActivate(product.id)} disabled={isLoading}>Activate</DropdownMenuItem>
                         )}
-                        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(product.id)}>Delete</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(product.id)} disabled={isLoading}>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -203,7 +203,7 @@ export default function AdminProductsPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  No products found.
+                  No products found{searchTerm ? ' matching your search' : ''}.
                 </TableCell>
               </TableRow>
             )}
