@@ -3,35 +3,36 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --background: 0 0% 94%; /* Light Grey */
+    --foreground: 0 0% 20%; /* Dark Grey */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 0 0% 20%; /* Dark Grey */
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 0 0% 20%; /* Dark Grey */
+    --primary: 0 0% 20%; /* Dark Grey */
+    --primary-foreground: 0 0% 94%; /* Light Grey */
+    --secondary: 0 0% 90%; /* Slightly darker Light Grey */
+    --secondary-foreground: 0 0% 20%; /* Dark Grey */
+    --muted: 0 0% 90%; /* Slightly darker Light Grey */
+    --muted-foreground: 0 0% 45%; /* Medium Grey */
+    --accent: 182 100% 74%; /* Electric Blue */
+    --accent-foreground: 0 0% 20%; /* Dark Grey */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --border: 0 0% 85%; /* Lighter Grey Border */
+    --input: 0 0% 85%; /* Lighter Grey Input */
+    --ring: 182 100% 74%; /* Electric Blue */
+    --chart-1: 182 100% 74%;
+    --chart-2: 182 80% 60%;
+    --chart-3: 182 60% 50%;
+    --chart-4: 182 40% 40%;
+    --chart-5: 182 20% 30%;
     --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -43,30 +44,31 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    /* Define dark mode colors if needed, TBD based on user preference */
+    --background: 0 0% 10%; /* Darker Grey */
+    --foreground: 0 0% 94%; /* Light Grey */
+    --card: 0 0% 15%; /* Dark Card */
+    --card-foreground: 0 0% 94%; /* Light Grey */
+    --popover: 0 0% 15%; /* Dark Popover */
+    --popover-foreground: 0 0% 94%; /* Light Grey */
+    --primary: 0 0% 94%; /* Light Grey */
+    --primary-foreground: 0 0% 10%; /* Darker Grey */
+    --secondary: 0 0% 20%; /* Dark Grey */
+    --secondary-foreground: 0 0% 94%; /* Light Grey */
+    --muted: 0 0% 20%; /* Dark Grey */
+    --muted-foreground: 0 0% 63.9%; /* Lighter Grey Text */
+    --accent: 182 100% 74%; /* Electric Blue */
+    --accent-foreground: 0 0% 10%; /* Darker Grey */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --border: 0 0% 25%; /* Dark Border */
+    --input: 0 0% 25%; /* Dark Input */
+    --ring: 182 100% 74%; /* Electric Blue */
+    --chart-1: 182 100% 74%;
+    --chart-2: 182 80% 60%;
+    --chart-3: 182 60% 50%;
+    --chart-4: 182 40% 40%;
+    --chart-5: 182 20% 30%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -84,5 +86,28 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Add subtle animation to buttons */
+  .btn-animated {
+    @apply transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+  .btn-animated-accent {
+     @apply hover:bg-accent/90;
+  }
+   /* Add futuristic input styles */
+  input, textarea, select {
+    @apply bg-background border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-300 ease-in-out placeholder-muted-foreground;
+  }
+
+  /* Floating label styles */
+  .floating-label {
+    position: relative;
+  }
+  .floating-label input:not(:placeholder-shown) + label,
+  .floating-label textarea:not(:placeholder-shown) + label {
+    @apply -translate-y-5 scale-75 text-accent;
+  }
+  .floating-label label {
+    @apply absolute left-3 top-2 text-muted-foreground transition-all duration-300 ease-in-out origin-top-left pointer-events-none;
   }
 }

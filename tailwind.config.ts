@@ -68,27 +68,45 @@ export default {
   		},
   		keyframes: {
   			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
+  				from: { height: '0' },
+  				to: { height: 'var(--radix-accordion-content-height)' },
   			},
   			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
-  			}
+  				from: { height: 'var(--radix-accordion-content-height)' },
+  				to: { height: '0' },
+  			},
+            'fade-in': { // Add fade-in animation
+                 '0%': { opacity: '0', transform: 'translateY(10px)' },
+                 '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
-  		}
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+            'fade-in': 'fade-in 0.5s ease-in-out forwards', // Add fade-in animation utility
+  		},
+        typography: (theme: (arg0: string) => any) => ({ // Add Tailwind Typography defaults
+            DEFAULT: {
+                css: {
+                    color: theme('colors.muted.foreground'),
+                     a: {
+                        color: theme('colors.primary'),
+                        '&:hover': {
+                            color: theme('colors.accent'),
+                        },
+                    },
+                    h1: { color: theme('colors.foreground') },
+                    h2: { color: theme('colors.foreground') },
+                    h3: { color: theme('colors.foreground') },
+                    strong: { color: theme('colors.foreground') },
+                    // Add other elements as needed
+                },
+            },
+        }),
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require('@tailwindcss/typography'), // Add Typography plugin
+  ],
 } satisfies Config;
