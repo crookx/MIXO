@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { GeistSans } from 'geist/font/sans';
+// import { GeistSans } from 'geist/font/sans'; // Removed due to build errors
 import './globals.css';
 import { cn } from '@/lib/utils';
 import Header from '@/components/layout/header';
@@ -18,12 +18,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Apply GeistSans variable directly to html tag
-    <html lang="en" className={cn("h-full", GeistSans.variable)}>
+    // Remove GeistSans variable from html tag
+    <html lang="en" className={cn("h-full")}>
       <body
         className={cn(
           'relative h-full font-sans antialiased',
-          // GeistSans.className // Apply font class directly to body
+          // GeistSans.className // Remove font class application
         )}
       >
         <div className="flex flex-col min-h-screen">

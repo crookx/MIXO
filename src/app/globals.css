@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 body {
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif; /* Use the CSS variable */
+  /* font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif; Remove custom font */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; /* Use standard sans-serif stack */
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -144,3 +145,35 @@ body {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+/* Loading spinner styles */
+.loading-spinner {
+  border: 4px solid hsl(var(--muted));
+  border-top: 4px solid hsl(var(--primary));
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 2rem auto; /* Center the spinner */
+}
+
+/* Loading overlay (optional) */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: hsla(var(--background) / 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Subtle scale-up animation for cards/elements */
+@keyframes scaleUp {
+    from { transform: scale(0.95); opacity: 0.8; }
+    to { transform: scale(1); opacity: 1; }
+}
+.animate-scale-up {
+    animation: scaleUp 0.4s ease-out forwards;
+}
+
