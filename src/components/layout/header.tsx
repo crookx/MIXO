@@ -3,12 +3,14 @@
 import Link from 'next/link';
 import { ShoppingCart, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet'; // Added SheetClose
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils'; // Import cn for conditional classes
 
 const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile menu
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -21,56 +23,76 @@ const Header = () => {
     };
   }, []);
 
+   useEffect(() => {
+    // Close sheet if screen size changes from mobile to desktop
+    if (!isMobile && isSheetOpen) {
+      setIsSheetOpen(false);
+    }
+  }, [isMobile, isSheetOpen]);
+
   const navItems = [
     { href: '/', label: 'Home' },
     { href: '/products', label: 'Products' },
+    { href: '/about', label: 'About' }, // Added About
+    { href: '/support', label: 'Support' }, // Added Support
     // Add more categories as needed
   ];
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ease-in-out ${
-        isSticky ? 'bg-background/95 shadow-md backdrop-blur-sm' : 'bg-background'
-      }`}
+      className={cn(
+        `sticky top-0 z-50 w-full border-b transition-all duration-300 ease-in-out`,
+        isSticky ? 'bg-background/90 shadow-md backdrop-blur-md' : 'bg-background' // Enhanced sticky effect
+      )}
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href="/" className="text-2xl font-bold text-primary mr-6">
+        <Link href="/" className="text-2xl font-bold text-primary mr-6 transition-transform duration-300 hover:scale-105"> {/* Added hover effect */}
           ChronoThreads
         </Link>
 
         {isMobile ? (
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="btn-animated"> {/* Added animation */}
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left">
-              <nav className="grid gap-6 text-lg font-medium mt-8">
+            <SheetContent side="left" className="w-[280px] bg-background p-6"> {/* Adjusted width and padding */}
+               <Link href="/" className="text-2xl font-bold text-primary mb-8 block" onClick={() => setIsSheetOpen(false)}> {/* Close on logo click */}
+                 ChronoThreads
+               </Link>
+              <nav className="grid gap-4 text-lg font-medium"> {/* Reduced gap */}
                 {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {item.label}
-                  </Link>
+                   <SheetClose asChild key={item.href}> {/* Wrap with SheetClose */}
+                     <Link
+                       href={item.href}
+                       className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                     >
+                       {/* Example: Add icons if desired */}
+                       {item.label}
+                     </Link>
+                   </SheetClose>
                 ))}
-                 <Link
-                    href="/cart"
-                    className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <ShoppingCart className="h-5 w-5" />
-                    Cart
-                  </Link>
-                  <Link
-                    href="/auth"
-                    className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <User className="h-5 w-5" />
-                    Account
-                  </Link>
+                 <Separator className="my-2" /> {/* Added separator */}
+                 <SheetClose asChild>
+                    <Link
+                      href="/cart"
+                      className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <ShoppingCart className="h-5 w-5" />
+                      Cart
+                    </Link>
+                 </SheetClose>
+                 <SheetClose asChild>
+                    <Link
+                      href="/auth"
+                      className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <User className="h-5 w-5" />
+                      Account
+                    </Link>
+                  </SheetClose>
               </nav>
             </SheetContent>
           </Sheet>
@@ -81,23 +103,23 @@ const Header = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-muted-foreground transition-colors hover:text-foreground hover:text-accent"
+                  className="text-muted-foreground transition-colors hover:text-foreground hover:text-accent relative after:absolute after:bottom-[-2px] after:left-0 after:h-[2px] after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full" // Underline animation on hover
                 >
                   {item.label}
                 </Link>
               ))}
             </nav>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2"> {/* Reduced gap */}
               <Link href="/cart" aria-label="Shopping Cart">
-                <Button variant="ghost" size="icon" className="relative btn-animated">
-                  <ShoppingCart className="h-5 w-5 text-primary transition-colors hover:text-accent" />
+                <Button variant="ghost" size="icon" className="relative btn-animated group"> {/* Added group */}
+                  <ShoppingCart className="h-5 w-5 text-primary transition-colors group-hover:text-accent" /> {/* Group hover */}
                    {/* Optional: Add a badge for item count */}
                    {/* <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground">3</span> */}
                 </Button>
               </Link>
               <Link href="/auth" aria-label="User Account">
-                <Button variant="ghost" size="icon" className="btn-animated">
-                  <User className="h-5 w-5 text-primary transition-colors hover:text-accent" />
+                <Button variant="ghost" size="icon" className="btn-animated group"> {/* Added group */}
+                  <User className="h-5 w-5 text-primary transition-colors group-hover:text-accent" /> {/* Group hover */}
                 </Button>
               </Link>
             </div>

@@ -1,6 +1,6 @@
 'use client'; // Required for state and potential client-side filtering
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Added useEffect
 import ProductCard from '@/components/product/product-card';
 import {
   Select,
@@ -14,7 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react'; // Added Loader2
+import { Skeleton } from "@/components/ui/skeleton"; // Added Skeleton
 
 
 // Mock Data
@@ -43,70 +44,101 @@ export default function ProductListingPage() {
   const [selectedSize, setSelectedSize] = useState('all');
   const [priceRange, setPriceRange] = useState<[number]>([MAX_PRICE]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Added loading state
 
-  // Basic filtering logic (can be enhanced)
-  const applyFilters = () => {
-    let tempProducts = allProducts;
+  // Debounce function
+  const debounce = <F extends (...args: any[]) => any>(func: F, waitFor: number) => {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
 
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      tempProducts = tempProducts.filter(p => p.category === selectedCategory);
-    }
+    const debounced = (...args: Parameters<F>) => {
+      if (timeout !== null) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      timeout = setTimeout(() => func(...args), waitFor);
+    };
 
-    // Filter by size
-    if (selectedSize !== 'all') {
-      tempProducts = tempProducts.filter(p => p.size.includes(selectedSize));
-    }
-
-    // Filter by price
-    tempProducts = tempProducts.filter(p => p.price <= priceRange[0]);
-
-    // Filter by search term
-    if (searchTerm.trim() !== '') {
-      tempProducts = tempProducts.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-
-    setFilteredProducts(tempProducts);
+    return debounced as (...args: Parameters<F>) => ReturnType<F>;
   };
 
-   // Apply filters whenever filter state changes
-   // Debounce search term for better performance in a real app
-   // useEffect(() => { applyFilters(); }, [selectedCategory, selectedSize, priceRange, searchTerm]);
-   // For now, apply on button click
+
+  // Filtering logic
+  const applyFilters = () => {
+    setIsLoading(true); // Start loading
+
+    // Simulate async filtering
+    setTimeout(() => {
+      let tempProducts = allProducts;
+
+      // Filter by category
+      if (selectedCategory !== 'all') {
+        tempProducts = tempProducts.filter(p => p.category === selectedCategory);
+      }
+
+      // Filter by size
+      if (selectedSize !== 'all') {
+        tempProducts = tempProducts.filter(p => p.size.includes(selectedSize));
+      }
+
+      // Filter by price
+      tempProducts = tempProducts.filter(p => p.price <= priceRange[0]);
+
+      // Filter by search term
+      if (searchTerm.trim() !== '') {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        tempProducts = tempProducts.filter(p =>
+          p.name.toLowerCase().includes(lowerSearchTerm) ||
+          (p.description && p.description.toLowerCase().includes(lowerSearchTerm))
+        );
+      }
+
+      setFilteredProducts(tempProducts);
+      setIsLoading(false); // Stop loading
+    }, 500); // Simulate 500ms delay
+  };
+
+   // Debounced search handler
+   const debouncedSearch = debounce((term: string) => {
+     setSearchTerm(term);
+     // applyFilters(); // Apply filters immediately after debounce, or trigger with button
+   }, 300); // 300ms debounce delay
+
+   // Apply filters whenever filter state changes (except search term, handled by debounce)
+   useEffect(() => {
+      applyFilters();
+   }, [selectedCategory, selectedSize, priceRange, searchTerm]); // Re-run filters when searchTerm state updates
+
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-8">
-      <h1 className="text-3xl md:text-4xl font-bold text-center mb-8">Explore Our Collection</h1>
+      <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 animate-fade-in">Explore Our Collection</h1>
 
       <div className="flex flex-col md:flex-row gap-8">
         {/* Filters Sidebar */}
         <aside className="w-full md:w-1/4 lg:w-1/5">
-           <div className="sticky top-20 space-y-6">
+           <div className="sticky top-20 space-y-6 animate-fade-in"> {/* Added animation */}
              <div className="relative">
                 <Input
                   type="text"
                   placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  defaultValue={searchTerm} // Use defaultValue for debounced input
+                  onChange={(e) => debouncedSearch(e.target.value)}
+                  className="pl-10 transition-colors duration-300" // Added transition
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
              </div>
 
-            <Accordion type="multiple" defaultValue={['category', 'price']} className="w-full">
+            <Accordion type="multiple" defaultValue={['category', 'price']} className="w-full transition-all duration-300"> {/* Added transition */}
                <AccordionItem value="category">
-                <AccordionTrigger className="text-lg font-semibold">Category</AccordionTrigger>
+                <AccordionTrigger className="text-lg font-semibold hover:text-accent">Category</AccordionTrigger> {/* Added hover effect */}
                 <AccordionContent>
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full btn-animated"> {/* Added animation */}
                       <SelectValue placeholder="Select Category" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="animate-fade-in"> {/* Added animation */}
                       {categories.map(cat => (
-                        <SelectItem key={cat} value={cat} className="capitalize">{cat}</SelectItem>
+                        <SelectItem key={cat} value={cat} className="capitalize cursor-pointer hover:bg-accent">{cat}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -114,30 +146,30 @@ export default function ProductListingPage() {
               </AccordionItem>
 
               <AccordionItem value="price">
-                <AccordionTrigger className="text-lg font-semibold">Price Range</AccordionTrigger>
+                <AccordionTrigger className="text-lg font-semibold hover:text-accent">Price Range</AccordionTrigger> {/* Added hover effect */}
                 <AccordionContent className="pt-4">
-                   <Label htmlFor="price-range" className="mb-2 block">Max Price: ${priceRange[0]}</Label>
+                   <Label htmlFor="price-range" className="mb-2 block text-muted-foreground">Max Price: ${priceRange[0]}</Label>
                   <Slider
                     id="price-range"
                     max={MAX_PRICE}
                     step={10}
                     value={priceRange}
                     onValueChange={(value) => setPriceRange(value as [number])}
-                    className="w-full"
+                    className="w-full cursor-pointer [&>span>span]:bg-primary [&>span>span]:h-2 [&>span]:h-2" // Enhanced slider style
                   />
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="size">
-                <AccordionTrigger className="text-lg font-semibold">Size</AccordionTrigger>
+                <AccordionTrigger className="text-lg font-semibold hover:text-accent">Size</AccordionTrigger> {/* Added hover effect */}
                 <AccordionContent>
                   <Select value={selectedSize} onValueChange={setSelectedSize}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full btn-animated"> {/* Added animation */}
                       <SelectValue placeholder="Select Size" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="animate-fade-in"> {/* Added animation */}
                        {sizes.map(size => (
-                        <SelectItem key={size} value={size}>{size}</SelectItem>
+                        <SelectItem key={size} value={size} className="cursor-pointer hover:bg-accent">{size}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -145,21 +177,40 @@ export default function ProductListingPage() {
               </AccordionItem>
             </Accordion>
 
-             <Button onClick={applyFilters} className="w-full btn-animated btn-animated-accent">Apply Filters</Button>
+             {/* Apply Filters Button (Optional if useEffect is used for instant filtering) */}
+             {/* <Button onClick={applyFilters} className="w-full btn-animated btn-animated-accent" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Apply Filters'}
+             </Button> */}
           </div>
         </aside>
 
         {/* Product Grid */}
         <main className="w-full md:w-3/4 lg:w-4/5">
-          {filteredProducts.length > 0 ? (
+          {isLoading ? (
+             // Skeleton Loading State
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {Array.from({ length: 6 }).map((_, index) => ( // Show 6 skeletons
+                <div key={index} className="space-y-2">
+                  <Skeleton className="h-[300px] md:h-[350px] w-full rounded-lg" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/4" />
+                </div>
+              ))}
+            </div>
+          ) : filteredProducts.length > 0 ? (
+             // Actual Product Grid
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {filteredProducts.map((product, index) => (
+                 <div key={product.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}> {/* Staggered fade-in */}
+                    <ProductCard product={product} />
+                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 text-muted-foreground">
-              <p>No products found matching your criteria.</p>
+             // No Products Found State
+            <div className="text-center py-16 text-muted-foreground animate-fade-in">
+              <p className="text-lg">No products found matching your criteria.</p>
+              <p className="text-sm">Try adjusting your filters or search term.</p>
             </div>
           )}
         </main>

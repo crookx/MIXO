@@ -111,7 +111,7 @@ export default function AuthPage() {
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 flex justify-center items-center min-h-[calc(100vh-200px)]">
-       <Tabs defaultValue="login" className="w-full max-w-md" id="auth-tabs">
+       <Tabs defaultValue="login" className="w-full max-w-md animate-fade-in" id="auth-tabs"> {/* Added animation */}
           <TabsList className="grid w-full grid-cols-2">
              <TabsTrigger value="login">Login</TabsTrigger>
              <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -119,7 +119,7 @@ export default function AuthPage() {
 
           {/* Login Tab */}
           <TabsContent value="login">
-             <Card className="shadow-lg animate-fade-in">
+             <Card className="shadow-lg"> {/* Removed redundant animation */}
               <CardHeader>
                 <CardTitle className="text-2xl">Welcome Back</CardTitle>
                 <CardDescription>Enter your credentials to access your account.</CardDescription>
@@ -132,7 +132,7 @@ export default function AuthPage() {
                         name="email"
                         render={({ field }) => (
                           <FormItem className="floating-label">
-                             <FormControl><Input placeholder=" " type="email" {...field} /></FormControl>
+                             <FormControl><Input placeholder=" " type="email" {...field} required /></FormControl> {/* Added required */}
                              <FormLabel>Email</FormLabel>
                             <FormMessage />
                           </FormItem>
@@ -143,7 +143,7 @@ export default function AuthPage() {
                         name="password"
                         render={({ field }) => (
                           <FormItem className="floating-label">
-                             <FormControl><Input placeholder=" " type="password" {...field} /></FormControl>
+                             <FormControl><Input placeholder=" " type="password" {...field} required /></FormControl> {/* Added required */}
                             <FormLabel>Password</FormLabel>
                             <FormMessage />
                           </FormItem>
@@ -191,7 +191,7 @@ export default function AuthPage() {
 
           {/* Sign Up Tab */}
           <TabsContent value="signup" id="signup"> {/* Added id for deep linking */}
-             <Card className="shadow-lg animate-fade-in">
+             <Card className="shadow-lg"> {/* Removed redundant animation */}
               <CardHeader>
                 <CardTitle className="text-2xl">Create Account</CardTitle>
                 <CardDescription>Join ChronoThreads today!</CardDescription>
@@ -204,7 +204,7 @@ export default function AuthPage() {
                         name="email"
                         render={({ field }) => (
                           <FormItem className="floating-label">
-                             <FormControl><Input placeholder=" " type="email" {...field} /></FormControl>
+                             <FormControl><Input placeholder=" " type="email" {...field} required /></FormControl> {/* Added required */}
                             <FormLabel>Email</FormLabel>
                             <FormMessage />
                           </FormItem>
@@ -215,7 +215,7 @@ export default function AuthPage() {
                         name="password"
                         render={({ field }) => (
                           <FormItem className="floating-label">
-                             <FormControl><Input placeholder=" " type="password" {...field} /></FormControl>
+                             <FormControl><Input placeholder=" " type="password" {...field} required /></FormControl> {/* Added required */}
                             <FormLabel>Password</FormLabel>
                             <FormMessage />
                           </FormItem>
@@ -226,7 +226,7 @@ export default function AuthPage() {
                         name="confirmPassword"
                         render={({ field }) => (
                           <FormItem className="floating-label">
-                             <FormControl><Input placeholder=" " type="password" {...field} /></FormControl>
+                             <FormControl><Input placeholder=" " type="password" {...field} required /></FormControl> {/* Added required */}
                             <FormLabel>Confirm Password</FormLabel>
                             <FormMessage />
                           </FormItem>
@@ -270,22 +270,4 @@ export default function AuthPage() {
 }
 
 // Add fade-in animation to globals.css if not already present
-/*
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out forwards;
-}
-
-// Add spin animation (Tailwind typically includes this by default)
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-*/
-```
+/* (Animations are now in globals.css) */

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Added useEffect
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -12,10 +12,12 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Truck, CreditCard, ShieldCheck, Loader2 } from 'lucide-react'; // Import Loader2
+import { Truck, CreditCard, ShieldCheck, Loader2, CheckCircle } from 'lucide-react'; // Added Loader2, CheckCircle
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation'; // For redirection after order
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton'; // Added Skeleton
+import { cn } from '@/lib/utils'; // Import cn
 
 
 // Schema for form validation using Zod
@@ -31,9 +33,9 @@ const shippingSchema = z.object({
 
 const paymentSchema = z.object({
     paymentMethod: z.enum(['card', 'paypal'], { required_error: "Please select a payment method." }),
-    cardNumber: z.string().optional(), // Add more specific validation for card numbers
-    expiryDate: z.string().optional(), // Format MM/YY
-    cvc: z.string().optional(), // 3-4 digits
+    cardNumber: z.string().refine(val => /^\d{13,19}$/.test(val ?? ''), { message: "Invalid card number." }).optional(), // Basic card format check
+    expiryDate: z.string().refine(val => /^(0[1-9]|1[0-2])\/?([0-9]{2})$/.test(val ?? ''), { message: "Invalid expiry date (MM/YY)."}).optional(), // MM/YY format
+    cvc: z.string().refine(val => /^\d{3,4}$/.test(val ?? ''), { message: "Invalid CVC." }).optional(), // 3-4 digits
 }).refine(data => {
     // Require card details only if 'card' is selected
     if (data.paymentMethod === 'card') {
@@ -49,11 +51,13 @@ const paymentSchema = z.object({
 type ShippingFormValues = z.infer<typeof shippingSchema>;
 type PaymentFormValues = z.infer<typeof paymentSchema>;
 
-// Mock Order Summary Data (fetch from cart state in real app)
-const mockOrderItems = [
-  { id: '1', name: 'Cybernetic Hoodie', price: 120, quantity: 1 },
-  { id: '3', name: 'Zero-G Sneakers', price: 180, quantity: 1 },
-];
+// Mock Order Summary Data (will simulate loading)
+interface MockOrderItem {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+}
 const mockSubtotal = 300;
 const mockShipping = 0;
 const mockTotal = 300;
@@ -64,6 +68,21 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false); // State for processing payment
+  const [isLoadingSummary, setIsLoadingSummary] = useState(true); // State for loading summary
+  const [orderItems, setOrderItems] = useState<MockOrderItem[]>([]); // State for order items
+
+  // Simulate loading order summary data
+  useEffect(() => {
+      setIsLoadingSummary(true);
+      setTimeout(() => {
+          setOrderItems([
+              { id: '1', name: 'Cybernetic Hoodie', price: 120, quantity: 1 },
+              { id: '3', name: 'Zero-G Sneakers', price: 180, quantity: 1 },
+          ]);
+          setIsLoadingSummary(false);
+      }, 600); // Simulate 600ms delay
+  }, []);
+
 
   const shippingForm = useForm<ShippingFormValues>({
     resolver: zodResolver(shippingSchema),
@@ -127,23 +146,45 @@ export default function CheckoutPage() {
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-8">
-      <h1 className="text-3xl md:text-4xl font-bold text-center mb-8">Checkout</h1>
+      <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 animate-fade-in">Checkout</h1>
 
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
         {/* Checkout Steps */}
         <div className="flex-grow lg:w-2/3">
-           {/* Step Indicators (Optional) */}
-           <div className="flex justify-center space-x-4 md:space-x-8 mb-8">
-             <div className={`flex items-center gap-2 ${currentStep === 'shipping' ? 'text-primary font-semibold animate-pulse' : 'text-muted-foreground'}`}>
+           {/* Step Indicators */}
+           <div className="flex justify-center space-x-4 md:space-x-8 mb-8 animate-fade-in">
+             <div className={cn(
+                  "flex items-center gap-2 transition-all duration-300",
+                  currentStep === 'shipping' ? 'text-primary font-semibold scale-105' : 'text-muted-foreground opacity-60'
+              )}>
                <Truck className="h-5 w-5"/> Shipping
              </div>
-             <Separator orientation="vertical" className={`h-6 transition-colors duration-500 ${currentStep === 'payment' || currentStep === 'confirmation' ? 'bg-primary' : 'bg-border'}`}/>
-              <div className={`flex items-center gap-2 ${currentStep === 'payment' ? 'text-primary font-semibold animate-pulse' : 'text-muted-foreground'}`}>
+             <Separator
+                  orientation="vertical"
+                  className={cn(
+                      "h-6 transition-all duration-500",
+                      currentStep === 'payment' || currentStep === 'confirmation' ? 'bg-primary scale-y-110' : 'bg-border scale-y-90'
+                  )}
+              />
+              <div className={cn(
+                  "flex items-center gap-2 transition-all duration-300",
+                  currentStep === 'payment' ? 'text-primary font-semibold scale-105' : 'text-muted-foreground opacity-60'
+              )}>
                <CreditCard className="h-5 w-5"/> Payment
              </div>
-              <Separator orientation="vertical" className={`h-6 transition-colors duration-500 ${currentStep === 'confirmation' ? 'bg-primary' : 'bg-border'}`}/>
-             <div className={`flex items-center gap-2 ${currentStep === 'confirmation' ? 'text-primary font-semibold animate-pulse' : 'text-muted-foreground'}`}>
-                <ShieldCheck className="h-5 w-5"/> Confirmation
+              <Separator
+                  orientation="vertical"
+                  className={cn(
+                     "h-6 transition-all duration-500",
+                      currentStep === 'confirmation' ? 'bg-primary scale-y-110' : 'bg-border scale-y-90'
+                  )}
+              />
+             <div className={cn(
+                  "flex items-center gap-2 transition-all duration-300",
+                  currentStep === 'confirmation' ? 'text-primary font-semibold scale-105' : 'text-muted-foreground opacity-60'
+              )}>
+                 {currentStep === 'confirmation' ? <CheckCircle className="h-5 w-5 text-green-500" /> : <ShieldCheck className="h-5 w-5"/>} {/* Change icon on confirmation */}
+                 Confirmation
             </div>
            </div>
 
@@ -162,7 +203,7 @@ export default function CheckoutPage() {
                         render={({ field }) => (
                           <FormItem className="floating-label">
                             <FormControl>
-                              <Input placeholder=" " {...field} />
+                              <Input placeholder=" " {...field} required />
                             </FormControl>
                             <FormLabel>Email Address</FormLabel>
                             <FormMessage />
@@ -175,7 +216,7 @@ export default function CheckoutPage() {
                             name="firstName"
                             render={({ field }) => (
                             <FormItem className="floating-label">
-                                <FormControl><Input placeholder=" " {...field} /></FormControl>
+                                <FormControl><Input placeholder=" " {...field} required /></FormControl>
                                 <FormLabel>First Name</FormLabel>
                                 <FormMessage />
                             </FormItem>
@@ -186,7 +227,7 @@ export default function CheckoutPage() {
                             name="lastName"
                             render={({ field }) => (
                             <FormItem className="floating-label">
-                                <FormControl><Input placeholder=" " {...field} /></FormControl>
+                                <FormControl><Input placeholder=" " {...field} required /></FormControl>
                                 <FormLabel>Last Name</FormLabel>
                                 <FormMessage />
                             </FormItem>
@@ -198,7 +239,7 @@ export default function CheckoutPage() {
                         name="address"
                         render={({ field }) => (
                           <FormItem className="floating-label">
-                            <FormControl><Input placeholder=" " {...field} /></FormControl>
+                            <FormControl><Input placeholder=" " {...field} required /></FormControl>
                             <FormLabel>Street Address</FormLabel>
                             <FormMessage />
                           </FormItem>
@@ -210,7 +251,7 @@ export default function CheckoutPage() {
                             name="city"
                             render={({ field }) => (
                             <FormItem className="floating-label">
-                                <FormControl><Input placeholder=" " {...field} /></FormControl>
+                                <FormControl><Input placeholder=" " {...field} required /></FormControl>
                                 <FormLabel>City</FormLabel>
                                 <FormMessage />
                             </FormItem>
@@ -221,7 +262,7 @@ export default function CheckoutPage() {
                             name="postalCode"
                             render={({ field }) => (
                             <FormItem className="floating-label">
-                                <FormControl><Input placeholder=" " {...field} /></FormControl>
+                                <FormControl><Input placeholder=" " {...field} required /></FormControl>
                                 <FormLabel>Postal Code</FormLabel>
                                 <FormMessage />
                             </FormItem>
@@ -232,7 +273,7 @@ export default function CheckoutPage() {
                             name="country"
                             render={({ field }) => (
                              <FormItem className="floating-label">
-                                <FormControl><Input placeholder=" " {...field} /></FormControl> {/* Consider using a Select for country */}
+                                <FormControl><Input placeholder=" " {...field} required /></FormControl> {/* Consider using a Select for country */}
                                 <FormLabel>Country</FormLabel>
                                 <FormMessage />
                               </FormItem>
@@ -270,14 +311,14 @@ export default function CheckoutPage() {
                                   defaultValue={field.value}
                                   className="flex flex-col space-y-2"
                                 >
-                                  <FormItem className="flex items-center space-x-3 space-y-0 border p-4 rounded-md has-[:checked]:border-primary transition-colors">
+                                  <FormItem className="flex items-center space-x-3 space-y-0 border p-4 rounded-md has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/50 transition-all duration-200 cursor-pointer hover:border-muted-foreground/50">
                                     <FormControl><RadioGroupItem value="card" /></FormControl>
                                     <FormLabel className="font-normal cursor-pointer flex-grow">Credit / Debit Card</FormLabel>
                                   </FormItem>
-                                  <FormItem className="flex items-center space-x-3 space-y-0 border p-4 rounded-md has-[:checked]:border-primary transition-colors">
+                                  <FormItem className="flex items-center space-x-3 space-y-0 border p-4 rounded-md has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/50 transition-all duration-200 cursor-pointer hover:border-muted-foreground/50">
                                     <FormControl><RadioGroupItem value="paypal" /></FormControl>
                                     <FormLabel className="font-normal cursor-pointer flex-grow">PayPal</FormLabel>
-                                    {/* Add PayPal icon */}
+                                    {/* Add PayPal icon here if desired */}
                                   </FormItem>
                                 </RadioGroup>
                               </FormControl>
@@ -294,7 +335,7 @@ export default function CheckoutPage() {
                               name="cardNumber"
                               render={({ field }) => (
                                 <FormItem className="floating-label">
-                                  <FormControl><Input placeholder=" " {...field} /></FormControl>
+                                  <FormControl><Input placeholder=" " {...field} required={paymentForm.watch('paymentMethod') === 'card'} /></FormControl>
                                   <FormLabel>Card Number</FormLabel>
                                   <FormMessage />
                                 </FormItem>
@@ -306,7 +347,7 @@ export default function CheckoutPage() {
                                 name="expiryDate"
                                 render={({ field }) => (
                                     <FormItem className="floating-label">
-                                    <FormControl><Input placeholder="MM/YY" {...field} /></FormControl>
+                                    <FormControl><Input placeholder="MM/YY" {...field} required={paymentForm.watch('paymentMethod') === 'card'} /></FormControl>
                                     <FormLabel>Expiry Date</FormLabel>
                                     <FormMessage />
                                     </FormItem>
@@ -317,7 +358,7 @@ export default function CheckoutPage() {
                                 name="cvc"
                                 render={({ field }) => (
                                     <FormItem className="floating-label">
-                                    <FormControl><Input placeholder=" " type="password" {...field} /></FormControl>
+                                    <FormControl><Input placeholder="CVC" type="password" inputMode="numeric" maxLength={4} {...field} required={paymentForm.watch('paymentMethod') === 'card'} /></FormControl>
                                     <FormLabel>CVC</FormLabel>
                                     <FormMessage />
                                     </FormItem>
@@ -337,7 +378,7 @@ export default function CheckoutPage() {
                              <>
                                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...
                              </>
-                           ) : 'Place Order'}
+                           ) : (paymentForm.watch('paymentMethod') === 'paypal' ? 'Continue with PayPal' : 'Place Order')} {/* Change text for PayPal */}
                          </Button>
                        </div>
                      </form>
@@ -348,9 +389,9 @@ export default function CheckoutPage() {
 
             {/* Confirmation Message */}
             {currentStep === 'confirmation' && (
-                 <Card className="text-center p-8 shadow-lg animate-fade-in">
+                 <Card className="text-center p-8 shadow-lg animate-fade-in border border-green-500/30"> {/* Added border */}
                     <CardHeader>
-                         <ShieldCheck className="h-16 w-16 text-green-500 mx-auto mb-4 animate-bounce"/>
+                         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4 animate-bounce"/> {/* Changed icon */}
                         <CardTitle className="text-3xl">Order Confirmed!</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -368,38 +409,59 @@ export default function CheckoutPage() {
         <div className="lg:w-1/3">
           <div className="sticky top-20 border p-6 rounded-lg shadow-sm bg-card space-y-4 animate-fade-in">
             <h2 className="text-2xl font-semibold mb-4">Order Summary</h2>
-            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                {mockOrderItems.map(item => (
-                    <div key={item.id} className="flex justify-between items-center text-sm">
-                        <div>
-                            <span className="font-medium">{item.name}</span>
-                            <span className="text-muted-foreground"> (x{item.quantity})</span>
+            {isLoadingSummary ? (
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 animate-pulse">
+                   {[...Array(2)].map((_, index) => (
+                        <div key={index} className="flex justify-between items-center text-sm">
+                            <div className="space-y-1">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-3 w-16" />
+                            </div>
+                            <Skeleton className="h-4 w-12" />
                         </div>
-                        <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    ))}
+                    <Separator />
+                    <div className="flex justify-between"><Skeleton className="h-5 w-1/4" /><Skeleton className="h-5 w-1/4" /></div>
+                    <div className="flex justify-between"><Skeleton className="h-5 w-1/4" /><Skeleton className="h-5 w-1/4" /></div>
+                    <Separator />
+                    <div className="flex justify-between"><Skeleton className="h-6 w-1/3" /><Skeleton className="h-6 w-1/4" /></div>
+                </div>
+            ) : (
+                <>
+                    <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        {orderItems.map(item => (
+                            <div key={item.id} className="flex justify-between items-center text-sm">
+                                <div>
+                                    <span className="font-medium">{item.name}</span>
+                                    <span className="text-muted-foreground"> (x{item.quantity})</span>
+                                </div>
+                                <span>${(item.price * item.quantity).toFixed(2)}</span>
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
-            <Separator />
-             <div className="flex justify-between text-muted-foreground">
-                <span>Subtotal</span>
-                <span>${mockSubtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Shipping</span>
-                <span>{mockShipping === 0 ? 'Free' : `$${mockShipping.toFixed(2)}`}</span>
-              </div>
-             <Separator />
-             <div className="flex justify-between text-xl font-bold">
-                <span>Total</span>
-                <span>${mockTotal.toFixed(2)}</span>
-              </div>
-               {/* Show Place Order button here only if on payment step, otherwise it's in the form */}
-               {currentStep !== 'payment' && currentStep !== 'confirmation' && (
+                    <Separator />
+                    <div className="flex justify-between text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span>${mockSubtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                        <span>Shipping</span>
+                        <span>{mockShipping === 0 ? 'Free' : `$${mockShipping.toFixed(2)}`}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between text-xl font-bold">
+                        <span>Total</span>
+                        <span>${mockTotal.toFixed(2)}</span>
+                    </div>
+                </>
+            )}
+               {/* Action Button (Contextual) */}
+               {currentStep === 'shipping' && (
                     <Button
                         className="w-full mt-4 btn-animated btn-animated-accent"
                         size="lg"
-                        disabled={currentStep !== 'shipping' || isProcessing} // Disable if not on shipping step yet or processing
-                        onClick={() => shippingForm.handleSubmit(onShippingSubmit)()} // Trigger shipping submit
+                        disabled={isProcessing || !shippingForm.formState.isValid} // Disable if form invalid
+                        onClick={shippingForm.handleSubmit(onShippingSubmit)} // Trigger shipping submit
                     >
                         Continue to Payment
                     </Button>
@@ -407,18 +469,25 @@ export default function CheckoutPage() {
                {currentStep === 'payment' && (
                    <Button
                      type="submit" // Important: Needs to match the form's submit
-                     form="paymentForm" // Associate with the correct form ID if needed
+                     form="paymentForm" // Associate with the correct form ID if needed (though likely handled by Form context)
                      size="lg"
                      className="w-full mt-4 btn-animated btn-animated-accent"
-                     disabled={isProcessing || !paymentForm.formState.isValid}
+                     disabled={isProcessing || !paymentForm.formState.isValid || isLoadingSummary}
                      onClick={paymentForm.handleSubmit(onPaymentSubmit)} // Trigger payment submit
                    >
                      {isProcessing ? (
                        <>
                          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...
                        </>
-                     ) : 'Place Order'}
+                     ) : (paymentForm.watch('paymentMethod') === 'paypal' ? 'Continue with PayPal' : 'Place Order')}
                    </Button>
+               )}
+               {currentStep === 'confirmation' && (
+                    <Link href="/products" className="block w-full">
+                        <Button className="w-full mt-4 btn-animated" variant="outline">
+                             Continue Shopping
+                         </Button>
+                    </Link>
                )}
           </div>
         </div>
@@ -427,41 +496,4 @@ export default function CheckoutPage() {
   );
 }
 
-// Simple fade-in animation for steps
-// Add this to your globals.css or a style tag if not using Tailwind JIT animations
-/*
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out forwards;
-}
-
-@keyframes pulse {
-  50% { opacity: .5; }
-}
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
-  50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
-}
-.animate-bounce {
-    animation: bounce 1s infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-*/
-// Ensure tailwind config includes the animation:
-// theme: { extend: { keyframes: { 'fade-in': ..., 'pulse': ..., 'bounce': ..., 'spin': ... }, animation: { 'fade-in': ..., 'pulse': ..., 'bounce': ..., 'spin': ... } } }
-```
+// Animations are now in globals.css

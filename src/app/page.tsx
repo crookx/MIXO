@@ -30,7 +30,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Carousel */}
-      <section className="relative w-full h-[60vh] md:h-[80vh] mb-12 overflow-hidden">
+      <section className="relative w-full h-[60vh] md:h-[80vh] mb-12 overflow-hidden group"> {/* Added group for potential child hover effects */}
          <Carousel className="w-full h-full" opts={{ loop: true }}>
             <CarouselContent className="h-full">
               {carouselItems.map((item) => (
@@ -40,16 +40,16 @@ export default function Home() {
                        <Image
                         src={item.imageUrl}
                         alt={item.title}
-                        layout="fill"
-                        objectFit="cover"
+                        fill // Use fill instead of layout
+                        style={{ objectFit: 'cover' }} // Use style for objectFit
                         className="absolute inset-0 z-0 transition-transform duration-500 ease-in-out group-hover:scale-105"
                         data-ai-hint="futuristic fashion model clothing"
                         priority
                       />
-                      <div className="absolute inset-0 bg-black/50 z-10"></div>
-                      <div className="relative z-20 text-center text-primary-foreground p-8">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-4">{item.title}</h2>
-                        <p className="text-lg md:text-xl mb-6">{item.description}</p>
+                      <div className="absolute inset-0 bg-black/50 z-10 transition-colors duration-300 group-hover:bg-black/60"></div> {/* Subtle hover effect */}
+                      <div className="relative z-20 text-center text-primary-foreground p-8 animate-fade-in"> {/* Added fade-in */}
+                        <h2 className="text-3xl md:text-5xl font-bold mb-4 drop-shadow-md">{item.title}</h2> {/* Added drop shadow */}
+                        <p className="text-lg md:text-xl mb-6 drop-shadow-sm">{item.description}</p> {/* Added drop shadow */}
                         <Link href={item.link}>
                            <Button size="lg" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90 btn-animated">
                             {item.buttonText}
@@ -61,20 +61,22 @@ export default function Home() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-30 text-white bg-black/30 hover:bg-black/50 border-none" />
-            <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-30 text-white bg-black/30 hover:bg-black/50 border-none" />
+            <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-30 text-white bg-black/30 hover:bg-black/50 border-none transition-all btn-animated" /> {/* Added transition and animation */}
+            <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-30 text-white bg-black/30 hover:bg-black/50 border-none transition-all btn-animated" /> {/* Added transition and animation */}
           </Carousel>
       </section>
 
       {/* Featured Products */}
       <section className="container mx-auto px-4 md:px-6 py-12">
-        <h2 className="text-3xl font-bold text-center mb-8">Featured Products</h2>
+        <h2 className="text-3xl font-bold text-center mb-8 animate-fade-in">Featured Products</h2> {/* Added fade-in */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {featuredProducts.map((product, index) => (
+             <div key={product.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}> {/* Staggered fade-in */}
+                 <ProductCard product={product} />
+             </div>
           ))}
         </div>
-         <div className="text-center mt-10">
+         <div className="text-center mt-10 animate-fade-in"> {/* Added fade-in */}
            <Link href="/products">
              <Button variant="outline" className="btn-animated">View All Products</Button>
            </Link>
@@ -84,10 +86,15 @@ export default function Home() {
       {/* Category Sections */}
       <section className="bg-secondary py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h2 className="text-3xl font-bold text-center mb-8 text-secondary-foreground">Shop by Category</h2>
+          <h2 className="text-3xl font-bold text-center mb-8 text-secondary-foreground animate-fade-in">Shop by Category</h2> {/* Added fade-in */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {categories.map((category) => (
-              <Link key={category.name} href={category.link} className="group relative overflow-hidden rounded-lg shadow-md block transition-transform duration-300 ease-in-out transform hover:scale-105">
+            {categories.map((category, index) => (
+              <Link
+                  key={category.name}
+                  href={category.link}
+                  className="group relative overflow-hidden rounded-lg shadow-md block transition-all duration-300 ease-in-out transform hover:scale-105 animate-fade-in" /* Added transition-all, hover:scale */
+                  style={{ animationDelay: `${0.2 + index * 0.1}s` }} /* Staggered fade-in */
+               >
                 <Image
                   src={category.imageUrl}
                   alt={category.name}
@@ -96,9 +103,9 @@ export default function Home() {
                   className="object-cover w-full h-48 md:h-64 transition-opacity duration-300 group-hover:opacity-90"
                   data-ai-hint={`${category.name} clothing fashion`}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                <div className="absolute bottom-0 left-0 p-4">
-                  <h3 className="text-lg font-semibold text-primary-foreground">{category.name}</h3>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 group-hover:from-black/70"></div> {/* Enhanced gradient on hover */}
+                <div className="absolute bottom-0 left-0 p-4 transition-transform duration-300 group-hover:translate-y-[-5px]"> {/* Subtle text lift on hover */}
+                  <h3 className="text-lg font-semibold text-primary-foreground drop-shadow-sm">{category.name}</h3> {/* Added drop shadow */}
                 </div>
               </Link>
             ))}
@@ -108,12 +115,13 @@ export default function Home() {
 
       {/* Promotional Banner */}
        <section className="container mx-auto px-4 md:px-6 py-16">
-        <div className="bg-gradient-to-r from-primary to-gray-700 text-primary-foreground rounded-lg p-8 md:p-12 flex flex-col md:flex-row items-center justify-between shadow-xl">
+        <div className="bg-gradient-main text-primary-foreground rounded-lg p-8 md:p-12 flex flex-col md:flex-row items-center justify-between shadow-xl transform transition-transform hover:scale-[1.02] duration-500 animate-fade-in"> {/* Added gradient, hover scale, fade-in */}
           <div className="mb-6 md:mb-0 md:mr-8">
             <h2 className="text-2xl md:text-4xl font-bold mb-3">Join the ChronoClub</h2>
             <p className="text-md md:text-lg opacity-90">Get exclusive access to drops, sales, and futuristic insights.</p>
           </div>
            <Link href="/auth#signup">
+              {/* Applied btn-animated to the Signup button */}
               <Button variant="outline" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary btn-animated">Sign Up Now</Button>
            </Link>
         </div>
