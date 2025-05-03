@@ -18,6 +18,8 @@ import { useRouter } from 'next/navigation'; // For redirection after order
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton'; // Added Skeleton
 import { cn } from '@/lib/utils'; // Import cn
+import { useCart } from '@/hooks/use-cart';
+import { orderApi } from '@/lib/api';
 
 
 // Schema for form validation using Zod
@@ -59,7 +61,7 @@ interface MockOrderItem {
     quantity: number;
 }
 const mockSubtotal = 300;
-const mockShipping = 0;
+const mockShipping: number = 0;
 const mockTotal = 300;
 
 
@@ -70,6 +72,17 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false); // State for processing payment
   const [isLoadingSummary, setIsLoadingSummary] = useState(true); // State for loading summary
   const [orderItems, setOrderItems] = useState<MockOrderItem[]>([]); // State for order items
+  const { items, getTotal, clearCart } = useCart();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    postalCode: '',
+  });
 
   // Simulate loading order summary data
   useEffect(() => {
@@ -122,7 +135,6 @@ export default function CheckoutPage() {
       toast({
           title: "Order Placed Successfully!",
           description: "Thank you for your purchase. You'll receive a confirmation email shortly.",
-          duration: 5000, // Keep toast longer
       });
       setCurrentStep('confirmation'); // Move to confirmation (optional state)
       // Redirect to a thank you page or clear cart after a delay
@@ -143,6 +155,44 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const orderData = {
+        items: items,
+        totalAmount: getTotal(),
+        shippingDetails: formData,
+      };
+
+      await orderApi.create(orderData);
+      clearCart();
+      toast({
+        title: 'Success',
+        description: 'Order placed successfully!',
+      });
+      router.push('/orders/success');
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to place order. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (items.length === 0) {
+    router.push('/cart');
+    return null;
+  }
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-8">

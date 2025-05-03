@@ -16,98 +16,81 @@ import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Search, Loader2 } from 'lucide-react'; // Added Loader2
 import { Skeleton } from "@/components/ui/skeleton"; // Added Skeleton
-
-
-// Mock Data
-const allProducts = [
-  { id: '1', name: 'Cybernetic Hoodie', price: 120, imageUrl: 'https://picsum.photos/seed/prod1/600/800', category: 'outerwear', size: ['M', 'L'], description: 'Comfort meets future tech.' },
-  { id: '2', name: 'Quantum Weave Jacket', price: 250, imageUrl: 'https://picsum.photos/seed/prod2/600/800', category: 'outerwear', size: ['S', 'M', 'L'], description: 'Lightweight and adaptable.' },
-  { id: '3', name: 'Zero-G Sneakers', price: 180, imageUrl: 'https://picsum.photos/seed/prod3/600/800', category: 'footwear', size: ['9', '10', '11'], description: 'Defy gravity in style.' },
-  { id: '4', name: 'Plasma Mesh Tee', price: 75, imageUrl: 'https://picsum.photos/seed/prod4/600/800', category: 'tops', size: ['S', 'M'], description: 'Breathable and bioluminescent.' },
-  { id: '5', name: 'Gravity Boots', price: 220, imageUrl: 'https://picsum.photos/seed/prod5/600/800', category: 'footwear', size: ['10', '11', '12'], description: 'Magnetic sole technology.' },
-  { id: '6', name: 'Holo-Visor', price: 95, imageUrl: 'https://picsum.photos/seed/prod6/600/800', category: 'accessories', size: ['One Size'], description: 'Augmented reality interface.' },
-  { id: '7', name: 'Stealth Cloak', price: 450, imageUrl: 'https://picsum.photos/seed/prod7/600/800', category: 'outerwear', size: ['L', 'XL'], description: 'Optical camouflage fabric.' },
-  { id: '8', name: 'Kinetic Gloves', price: 60, imageUrl: 'https://picsum.photos/seed/prod8/600/800', category: 'accessories', size: ['M', 'L'], description: 'Enhanced grip and feedback.' },
-  { id: '9', name: 'Cryo-Cooled Vest', price: 190, imageUrl: 'https://picsum.photos/seed/prod9/600/800', category: 'tops', size: ['M', 'L', 'XL'], description: 'Personal climate control.' },
-   { id: '10', name: 'Neural Interface Band', price: 110, imageUrl: 'https://picsum.photos/seed/prod10/600/800', category: 'accessories', size: ['One Size'], description: 'Connect your mind.' },
-   { id: '11', name: 'Reactive Cargo Pants', price: 140, imageUrl: 'https://picsum.photos/seed/prod11/600/800', category: 'bottoms', size: ['S', 'M', 'L'], description: 'Adapts to environmental conditions.' },
-   { id: '12', name: 'Orbital Watch', price: 300, imageUrl: 'https://picsum.photos/seed/prod12/600/800', category: 'accessories', size: ['One Size'], description: 'Tracks planetary alignment.' },
-];
+import { productApi } from '@/lib/api-client';
+import { Product } from '@/types/product';
+import { toast } from '@/hooks/use-toast';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const categories = ['all', 'outerwear', 'tops', 'bottoms', 'footwear', 'accessories'];
 const sizes = ['all', 'S', 'M', 'L', 'XL', 'One Size', '9', '10', '11', '12'];
 const MAX_PRICE = 500;
 
-export default function ProductListingPage() {
-  const [filteredProducts, setFilteredProducts] = useState(allProducts);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedSize, setSelectedSize] = useState('all');
-  const [priceRange, setPriceRange] = useState<[number]>([MAX_PRICE]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // Added loading state
+export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState({
+    category: 'all',
+    size: 'all',
+    maxPrice: MAX_PRICE,
+    search: ''
+  });
 
-  // Debounce function
-  const debounce = <F extends (...args: any[]) => any>(func: F, waitFor: number) => {
-    let timeout: ReturnType<typeof setTimeout> | null = null;
+  const debouncedSearch = useDebounce(filters.search, 500);
 
-    const debounced = (...args: Parameters<F>) => {
-      if (timeout !== null) {
-        clearTimeout(timeout);
-        timeout = null;
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      try {
+        const response = await productApi.getAll({
+          category: filters.category !== 'all' ? filters.category : undefined,
+          size: filters.size !== 'all' ? filters.size : undefined,
+          maxPrice: filters.maxPrice,
+          search: debouncedSearch
+        });
+        
+        // Add logging to debug the response
+        console.log('API Response:', response);
+        
+        if (response.data) {
+          setProducts(response.data);
+          setError(null);
+        } else {
+          throw new Error('No products data received');
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+        toast({
+          title: 'Error',
+          description: 'Failed to load products. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
       }
-      timeout = setTimeout(() => func(...args), waitFor);
     };
 
-    return debounced as (...args: Parameters<F>) => ReturnType<F>;
+    fetchProducts();
+  }, [filters.category, filters.size, filters.maxPrice, debouncedSearch]);
+
+  const handleFilterChange = (key: keyof typeof filters, value: string | number) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  if (isLoading) {
+    return (
+      <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 py-8">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="h-[350px] w-full" />
+        ))}
+      </div>
+    );
+  }
 
-  // Filtering logic
-  const applyFilters = () => {
-    setIsLoading(true); // Start loading
-
-    // Simulate async filtering
-    setTimeout(() => {
-      let tempProducts = allProducts;
-
-      // Filter by category
-      if (selectedCategory !== 'all') {
-        tempProducts = tempProducts.filter(p => p.category === selectedCategory);
-      }
-
-      // Filter by size
-      if (selectedSize !== 'all') {
-        tempProducts = tempProducts.filter(p => p.size.includes(selectedSize));
-      }
-
-      // Filter by price
-      tempProducts = tempProducts.filter(p => p.price <= priceRange[0]);
-
-      // Filter by search term
-      if (searchTerm.trim() !== '') {
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        tempProducts = tempProducts.filter(p =>
-          p.name.toLowerCase().includes(lowerSearchTerm) ||
-          (p.description && p.description.toLowerCase().includes(lowerSearchTerm))
-        );
-      }
-
-      setFilteredProducts(tempProducts);
-      setIsLoading(false); // Stop loading
-    }, 500); // Simulate 500ms delay
-  };
-
-   // Debounced search handler
-   const debouncedSearch = debounce((term: string) => {
-     setSearchTerm(term);
-     // applyFilters(); // Apply filters immediately after debounce, or trigger with button
-   }, 300); // 300ms debounce delay
-
-   // Apply filters whenever filter state changes (except search term, handled by debounce)
-   useEffect(() => {
-      applyFilters();
-   }, [selectedCategory, selectedSize, priceRange, searchTerm]); // Re-run filters when searchTerm state updates
-
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-8">
@@ -121,8 +104,8 @@ export default function ProductListingPage() {
                 <Input
                   type="text"
                   placeholder="Search products..."
-                  defaultValue={searchTerm} // Use defaultValue for debounced input
-                  onChange={(e) => debouncedSearch(e.target.value)}
+                  value={filters.search}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
                   className="pl-10 transition-colors duration-300" // Added transition
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -132,7 +115,10 @@ export default function ProductListingPage() {
                <AccordionItem value="category">
                 <AccordionTrigger className="text-lg font-semibold hover:text-accent">Category</AccordionTrigger> {/* Added hover effect */}
                 <AccordionContent>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <Select 
+                    value={filters.category}
+                    onValueChange={(value) => handleFilterChange('category', value)}
+                  >
                     <SelectTrigger className="w-full btn-animated"> {/* Added animation */}
                       <SelectValue placeholder="Select Category" />
                     </SelectTrigger>
@@ -148,13 +134,13 @@ export default function ProductListingPage() {
               <AccordionItem value="price">
                 <AccordionTrigger className="text-lg font-semibold hover:text-accent">Price Range</AccordionTrigger> {/* Added hover effect */}
                 <AccordionContent className="pt-4">
-                   <Label htmlFor="price-range" className="mb-2 block text-muted-foreground">Max Price: ${priceRange[0]}</Label>
+<Label htmlFor="price-range" className="mb-2 block text-muted-foreground">Max Price: ${MAX_PRICE}</Label>
                   <Slider
                     id="price-range"
                     max={MAX_PRICE}
                     step={10}
-                    value={priceRange}
-                    onValueChange={(value) => setPriceRange(value as [number])}
+                    value={[filters.maxPrice]}
+                    onValueChange={(value) => handleFilterChange('maxPrice', value[0])}
                     className="w-full cursor-pointer [&>span>span]:bg-primary [&>span>span]:h-2 [&>span]:h-2" // Enhanced slider style
                   />
                 </AccordionContent>
@@ -163,7 +149,10 @@ export default function ProductListingPage() {
               <AccordionItem value="size">
                 <AccordionTrigger className="text-lg font-semibold hover:text-accent">Size</AccordionTrigger> {/* Added hover effect */}
                 <AccordionContent>
-                  <Select value={selectedSize} onValueChange={setSelectedSize}>
+                  <Select 
+                    value={filters.size}
+                    onValueChange={(value) => handleFilterChange('size', value)}
+                  >
                     <SelectTrigger className="w-full btn-animated"> {/* Added animation */}
                       <SelectValue placeholder="Select Size" />
                     </SelectTrigger>
@@ -197,13 +186,16 @@ export default function ProductListingPage() {
                 </div>
               ))}
             </div>
-          ) : filteredProducts.length > 0 ? (
-             // Actual Product Grid
+          ) : products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {filteredProducts.map((product, index) => (
-                 <div key={product.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}> {/* Staggered fade-in */}
-                    <ProductCard product={product} />
-                 </div>
+              {products.map((product) => (
+                <div 
+                  key={product._id} 
+                  className="animate-fade-in" 
+                  style={{ animationDelay: `${products.indexOf(product) * 0.05}s` }}
+                >
+                  <ProductCard product={product} />
+                </div>
               ))}
             </div>
           ) : (
